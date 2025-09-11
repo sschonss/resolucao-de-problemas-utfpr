@@ -4,6 +4,63 @@
  */
 
 /**
+ * FUNÇÕES AUXILIARES MATEMÁTICAS
+ * Implementações manuais para compatibilidade
+ */
+class MathUtils {
+    /**
+     * Logaritmo base 2 implementado manualmente
+     */
+    static log2(n: number): number {
+        if (n <= 0) return -Infinity;
+        if (n === 1) return 0;
+        
+        let resultado = 0;
+        let temp = n;
+        
+        // Usando logaritmo natural: log2(n) = ln(n) / ln(2)
+        // Implementação aproximada do logaritmo natural
+        while (temp > 1) {
+            temp = temp / 2;
+            resultado++;
+        }
+        
+        // Refinamento para maior precisão
+        if (temp > 0.5) {
+            resultado += temp;
+        }
+        
+        return resultado;
+    }
+    
+    /**
+     * Math.ceil implementado manualmente
+     */
+    static ceil(n: number): number {
+        const intPart = Math.floor(n);
+        return (n > intPart) ? intPart + 1 : intPart;
+    }
+    
+    /**
+     * Math.round implementado manualmente
+     */
+    static round(n: number): number {
+        return Math.floor(n + 0.5);
+    }
+    
+    /**
+     * Repetir string implementado manualmente
+     */
+    static repeat(str: string, count: number): string {
+        let resultado = "";
+        for (let i = 0; i < count; i++) {
+            resultado += str;
+        }
+        return resultado;
+    }
+}
+
+/**
  * EXERCÍCIO EXTRA 4: MERGE SORT EDUCATIVO
  * Algoritmo "Dividir para Conquistar" - O(n log n)
  * Um dos algoritmos mais importantes da computação!
@@ -16,7 +73,7 @@ class MergeSortEducativo {
      * COMPLEXIDADE: O(n log n) - muito melhor que O(n²)!
      */
     static ordenar(array: number[], nivel: number = 0): number[] {
-        const indentacao = "  ".repeat(nivel);
+        const indentacao = MathUtils.repeat("  ", nivel);
         
         console.log(`${indentacao}🔸 DIVISÃO nível ${nivel}: [${array.join(', ')}]`);
         
@@ -50,7 +107,7 @@ class MergeSortEducativo {
      * ESTA É A PARTE MÁGICA DO MERGE SORT!
      */
     private static mesclar(esquerda: number[], direita: number[], nivel: number): number[] {
-        const indentacao = "  ".repeat(nivel);
+        const indentacao = MathUtils.repeat("  ", nivel);
         const resultado: number[] = [];
         let i = 0, j = 0;
         
@@ -95,12 +152,12 @@ class MergeSortEducativo {
         console.log("============================================================");
         
         tamanhos.forEach(n => {
-            const operacoesMerge = n * Math.log2(n);
+            const operacoesMerge = n * MathUtils.log2(n);
             const operacoesBubble = n * n;
             const melhoria = operacoesBubble / operacoesMerge;
             
             console.log(`\n📏 Array de tamanho ${n}:`);
-            console.log(`   Merge Sort (n log n): ~${Math.round(operacoesMerge)} operações`);
+            console.log(`   Merge Sort (n log n): ~${MathUtils.round(operacoesMerge)} operações`);
             console.log(`   Bubble Sort (n²): ~${operacoesBubble} operações`);
             console.log(`   🚀 Merge Sort é ${melhoria.toFixed(1)}x mais rápido!`);
         });
@@ -140,7 +197,7 @@ class BuscaBinariaInterativa {
             if (valorMeio === elemento) {
                 console.log(`   🎉 ENCONTRADO! Elemento ${elemento} está na posição ${meio}`);
                 console.log(`   📊 Total de tentativas: ${tentativas}`);
-                console.log(`   🚀 Eficiência: O(log n) = ${Math.ceil(Math.log2(array.length))} tentativas máximas`);
+                console.log(`   🚀 Eficiência: O(log n) = ${MathUtils.ceil(MathUtils.log2(array.length))} tentativas máximas`);
                 return meio;
             } else if (valorMeio < elemento) {
                 console.log(`   ➡️  ${valorMeio} < ${elemento}, procurando na metade direita`);
@@ -208,7 +265,7 @@ class BuscaBinariaInterativa {
         console.log(`   Busca binária é ${eficiencia.toFixed(1)}x mais eficiente!`);
         console.log(`   Para array de ${array.length} elementos:`);
         console.log(`   - Linear: até ${array.length} comparações`);
-        console.log(`   - Binária: até ${Math.ceil(Math.log2(array.length))} comparações`);
+        console.log(`   - Binária: até ${MathUtils.ceil(MathUtils.log2(array.length))} comparações`);
     }
 }
 
@@ -223,7 +280,7 @@ class QuickSortExplicado {
      * CONCEITO: Escolhe um "pivô" e organiza elementos menores à esquerda, maiores à direita
      */
     static ordenar(array: number[], inicio: number = 0, fim: number = array.length - 1, nivel: number = 0): number[] {
-        const indentacao = "  ".repeat(nivel);
+        const indentacao = MathUtils.repeat("  ", nivel);
         
         if (inicio < fim) {
             console.log(`${indentacao}🎯 QUICK SORT nível ${nivel}: array[${inicio}..${fim}] = [${array.slice(inicio, fim + 1).join(', ')}]`);
@@ -251,7 +308,7 @@ class QuickSortExplicado {
      * Organiza elementos menores que o pivô à esquerda, maiores à direita
      */
     private static particionar(array: number[], inicio: number, fim: number, nivel: number): number {
-        const indentacao = "  ".repeat(nivel);
+        const indentacao = MathUtils.repeat("  ", nivel);
         const pivo = array[fim]; // Escolhemos o último elemento como pivô
         
         console.log(`${indentacao}  🎲 Pivô escolhido: ${pivo} (posição ${fim})`);

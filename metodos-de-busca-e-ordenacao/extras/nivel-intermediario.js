@@ -12,6 +12,60 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 /**
+ * FUNÇÕES AUXILIARES MATEMÁTICAS
+ * Implementações manuais para compatibilidade
+ */
+var MathUtils = /** @class */ (function () {
+    function MathUtils() {
+    }
+    /**
+     * Logaritmo base 2 implementado manualmente
+     */
+    MathUtils.log2 = function (n) {
+        if (n <= 0)
+            return -Infinity;
+        if (n === 1)
+            return 0;
+        var resultado = 0;
+        var temp = n;
+        // Usando logaritmo natural: log2(n) = ln(n) / ln(2)
+        // Implementação aproximada do logaritmo natural
+        while (temp > 1) {
+            temp = temp / 2;
+            resultado++;
+        }
+        // Refinamento para maior precisão
+        if (temp > 0.5) {
+            resultado += temp;
+        }
+        return resultado;
+    };
+    /**
+     * Math.ceil implementado manualmente
+     */
+    MathUtils.ceil = function (n) {
+        var intPart = Math.floor(n);
+        return (n > intPart) ? intPart + 1 : intPart;
+    };
+    /**
+     * Math.round implementado manualmente
+     */
+    MathUtils.round = function (n) {
+        return Math.floor(n + 0.5);
+    };
+    /**
+     * Repetir string implementado manualmente
+     */
+    MathUtils.repeat = function (str, count) {
+        var resultado = "";
+        for (var i = 0; i < count; i++) {
+            resultado += str;
+        }
+        return resultado;
+    };
+    return MathUtils;
+}());
+/**
  * EXERCÍCIO EXTRA 4: MERGE SORT EDUCATIVO
  * Algoritmo "Dividir para Conquistar" - O(n log n)
  * Um dos algoritmos mais importantes da computação!
@@ -26,7 +80,7 @@ var MergeSortEducativo = /** @class */ (function () {
      */
     MergeSortEducativo.ordenar = function (array, nivel) {
         if (nivel === void 0) { nivel = 0; }
-        var indentacao = "  ".repeat(nivel);
+        var indentacao = MathUtils.repeat("  ", nivel);
         console.log("".concat(indentacao, "\uD83D\uDD38 DIVIS\u00C3O n\u00EDvel ").concat(nivel, ": [").concat(array.join(', '), "]"));
         // CASO BASE: Se o array tem 1 ou 0 elementos, já está ordenado
         if (array.length <= 1) {
@@ -52,7 +106,7 @@ var MergeSortEducativo = /** @class */ (function () {
      * ESTA É A PARTE MÁGICA DO MERGE SORT!
      */
     MergeSortEducativo.mesclar = function (esquerda, direita, nivel) {
-        var indentacao = "  ".repeat(nivel);
+        var indentacao = MathUtils.repeat("  ", nivel);
         var resultado = [];
         var i = 0, j = 0;
         console.log("".concat(indentacao, "   \uD83D\uDD00 MESCLANDO: [").concat(esquerda.join(', '), "] + [").concat(direita.join(', '), "]"));
@@ -91,11 +145,11 @@ var MergeSortEducativo = /** @class */ (function () {
         console.log("Comparando com outros algoritmos O(n²)");
         console.log("============================================================");
         tamanhos.forEach(function (n) {
-            var operacoesMerge = n * Math.log2(n);
+            var operacoesMerge = n * MathUtils.log2(n);
             var operacoesBubble = n * n;
             var melhoria = operacoesBubble / operacoesMerge;
             console.log("\n\uD83D\uDCCF Array de tamanho ".concat(n, ":"));
-            console.log("   Merge Sort (n log n): ~".concat(Math.round(operacoesMerge), " opera\u00E7\u00F5es"));
+            console.log("   Merge Sort (n log n): ~".concat(MathUtils.round(operacoesMerge), " opera\u00E7\u00F5es"));
             console.log("   Bubble Sort (n\u00B2): ~".concat(operacoesBubble, " opera\u00E7\u00F5es"));
             console.log("   \uD83D\uDE80 Merge Sort \u00E9 ".concat(melhoria.toFixed(1), "x mais r\u00E1pido!"));
         });
@@ -132,7 +186,7 @@ var BuscaBinariaInterativa = /** @class */ (function () {
             if (valorMeio === elemento) {
                 console.log("   \uD83C\uDF89 ENCONTRADO! Elemento ".concat(elemento, " est\u00E1 na posi\u00E7\u00E3o ").concat(meio));
                 console.log("   \uD83D\uDCCA Total de tentativas: ".concat(tentativas));
-                console.log("   \uD83D\uDE80 Efici\u00EAncia: O(log n) = ".concat(Math.ceil(Math.log2(array.length)), " tentativas m\u00E1ximas"));
+                console.log("   \uD83D\uDE80 Efici\u00EAncia: O(log n) = ".concat(MathUtils.ceil(MathUtils.log2(array.length)), " tentativas m\u00E1ximas"));
                 return meio;
             }
             else if (valorMeio < elemento) {
@@ -193,7 +247,7 @@ var BuscaBinariaInterativa = /** @class */ (function () {
         console.log("   Busca bin\u00E1ria \u00E9 ".concat(eficiencia.toFixed(1), "x mais eficiente!"));
         console.log("   Para array de ".concat(array.length, " elementos:"));
         console.log("   - Linear: at\u00E9 ".concat(array.length, " compara\u00E7\u00F5es"));
-        console.log("   - Bin\u00E1ria: at\u00E9 ".concat(Math.ceil(Math.log2(array.length)), " compara\u00E7\u00F5es"));
+        console.log("   - Bin\u00E1ria: at\u00E9 ".concat(MathUtils.ceil(MathUtils.log2(array.length)), " compara\u00E7\u00F5es"));
     };
     return BuscaBinariaInterativa;
 }());
@@ -212,7 +266,7 @@ var QuickSortExplicado = /** @class */ (function () {
         if (inicio === void 0) { inicio = 0; }
         if (fim === void 0) { fim = array.length - 1; }
         if (nivel === void 0) { nivel = 0; }
-        var indentacao = "  ".repeat(nivel);
+        var indentacao = MathUtils.repeat("  ", nivel);
         if (inicio < fim) {
             console.log("".concat(indentacao, "\uD83C\uDFAF QUICK SORT n\u00EDvel ").concat(nivel, ": array[").concat(inicio, "..").concat(fim, "] = [").concat(array.slice(inicio, fim + 1).join(', '), "]"));
             // PARTICIONAMENTO: Organiza o array em torno do pivô
@@ -233,7 +287,7 @@ var QuickSortExplicado = /** @class */ (function () {
      */
     QuickSortExplicado.particionar = function (array, inicio, fim, nivel) {
         var _a, _b;
-        var indentacao = "  ".repeat(nivel);
+        var indentacao = MathUtils.repeat("  ", nivel);
         var pivo = array[fim]; // Escolhemos o último elemento como pivô
         console.log("".concat(indentacao, "  \uD83C\uDFB2 Piv\u00F4 escolhido: ").concat(pivo, " (posi\u00E7\u00E3o ").concat(fim, ")"));
         var i = inicio - 1; // Índice do menor elemento

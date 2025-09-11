@@ -2,27 +2,24 @@
  * 🎯 DEMONSTRAÇÃO COMPLETA DOS EXERCÍCIOS EXTRAS
  * Execute este arquivo para ver todos os exercícios em ação!
  */
-
 // Função auxiliar para padEnd manual
-function padEnd(str: string, length: number): string {
-    if (str.length >= length) return str;
-    let padding = "";
-    for (let i = 0; i < length - str.length; i++) {
+function padEnd(str, length) {
+    if (str.length >= length)
+        return str;
+    var padding = "";
+    for (var i = 0; i < length - str.length; i++) {
         padding += " ";
     }
     return str + padding;
 }
-
 console.log("🎓 EXERCÍCIOS EXTRAS - MÉTODOS DE BUSCA E ORDENAÇÃO");
 console.log("====================================================================");
 console.log("🌟 Demonstração completa dos 3 níveis de dificuldade");
 console.log("====================================================================\n");
-
 console.log("📋 ESTRUTURA DOS EXERCÍCIOS:");
 console.log("🟢 NÍVEL INICIANTE: Conceitos fundamentais e algoritmos básicos");
 console.log("🟡 NÍVEL INTERMEDIÁRIO: Algoritmos eficientes e análise avançada");
 console.log("🔴 NÍVEL AVANÇADO: Estruturas complexas e algoritmos híbridos\n");
-
 console.log("💻 PARA EXECUTAR OS EXERCÍCIOS:");
 console.log("============================================================");
 console.log("# Compilar e executar todos os arquivos");
@@ -35,12 +32,10 @@ console.log("npx tsc nivel-iniciante.ts && node nivel-iniciante.js");
 console.log("npx tsc nivel-intermediario.ts && node nivel-intermediario.js");
 console.log("npx tsc nivel-avancado.ts && node nivel-avancado.js");
 console.log("============================================================\n");
-
 console.log("📊 RESUMO DOS ALGORITMOS IMPLEMENTADOS:");
 console.log("============================================================");
-
 // Dados de resumo dos algoritmos
-const algoritmos = [
+var algoritmos = [
     { nivel: "🟢", nome: "Busca Linear", complexidade: "O(n)", uso: "Arrays pequenos/não ordenados" },
     { nivel: "🟢", nome: "Bubble Sort", complexidade: "O(n²)", uso: "Educacional, arrays muito pequenos" },
     { nivel: "🟢", nome: "Insertion Sort", complexidade: "O(n²)", uso: "Arrays pequenos, parcialmente ordenados" },
@@ -52,18 +47,15 @@ const algoritmos = [
     { nivel: "🔴", nome: "Tim Sort", complexidade: "Híbrida", uso: "Arrays parcialmente ordenados" },
     { nivel: "🔴", nome: "Intro Sort", complexidade: "Híbrida", uso: "Robusto, bibliotecas padrão" }
 ];
-
-algoritmos.forEach(alg => {
-    console.log(`${alg.nivel} ${padEnd(alg.nome, 18)} ${padEnd(alg.complexidade, 12)} ${alg.uso}`);
+algoritmos.forEach(function (alg) {
+    console.log("".concat(alg.nivel, " ").concat(padEnd(alg.nome, 18), " ").concat(padEnd(alg.complexidade, 12), " ").concat(alg.uso));
 });
-
 console.log("\n📚 CONCEITOS ABORDADOS:");
 console.log("============================================================");
-
-const conceitos = [
+var conceitos = [
     "✅ Análise de complexidade (Big O)",
     "✅ Trade-offs entre tempo e espaço",
-    "✅ Algoritmos recursivos vs iterativos", 
+    "✅ Algoritmos recursivos vs iterativos",
     "✅ Estruturas de dados (heap, arrays)",
     "✅ Algoritmos híbridos e adaptativos",
     "✅ Estratégias de otimização",
@@ -72,9 +64,7 @@ const conceitos = [
     "✅ Comparação de performance",
     "✅ Implementações educativas"
 ];
-
-conceitos.forEach(conceito => console.log(conceito));
-
+conceitos.forEach(function (conceito) { return console.log(conceito); });
 console.log("\n🎯 OBJETIVOS DE APRENDIZAGEM:");
 console.log("============================================================");
 console.log("1. 📖 Compreender algoritmos fundamentais de busca e ordenação");
@@ -83,7 +73,6 @@ console.log("3. 🧠 Desenvolver intuição para escolha de algoritmos");
 console.log("4. 🔧 Implementar algoritmos de forma educativa");
 console.log("5. 📊 Medir e comparar performance");
 console.log("6. 🚀 Aplicar otimizações e técnicas avançadas");
-
 console.log("\n💡 DICAS DE ESTUDO:");
 console.log("============================================================");
 console.log("📋 PARA INICIANTES:");
@@ -91,19 +80,16 @@ console.log("  • Comece sempre pelo nível iniciante");
 console.log("  • Execute passo-a-passo e observe os outputs");
 console.log("  • Teste com diferentes arrays de entrada");
 console.log("  • Anote observações sobre performance");
-
 console.log("\n📋 PARA INTERMEDIÁRIOS:");
 console.log("  • Compare algoritmos no mesmo dataset");
 console.log("  • Meça tempos de execução reais");
 console.log("  • Experimente modificar os algoritmos");
 console.log("  • Implemente suas próprias otimizações");
-
 console.log("\n📋 PARA AVANÇADOS:");
 console.log("  • Estude estruturas de dados subjacentes");
 console.log("  • Analise provas de complexidade");
 console.log("  • Combine algoritmos para casos específicos");
 console.log("  • Teste com datasets muito grandes");
-
 console.log("\n🛠️  TECNOLOGIAS UTILIZADAS:");
 console.log("============================================================");
 console.log("• TypeScript para tipagem estática");
@@ -112,7 +98,6 @@ console.log("• Visualização passo-a-passo");
 console.log("• Análise de complexidade");
 console.log("• Comparações de performance");
 console.log("• Implementações modularizadas");
-
 console.log("\n📈 PRÓXIMOS PASSOS:");
 console.log("============================================================");
 console.log("1. 🎯 Execute os exercícios na ordem sugerida");
@@ -121,7 +106,6 @@ console.log("3. 📊 Meça performance com arrays reais");
 console.log("4. 🔧 Modifique algoritmos e observe mudanças");
 console.log("5. 🏗️  Implemente suas próprias variações");
 console.log("6. 📚 Estude os recursos adicionais no README");
-
 console.log("\n🎉 BOA SORTE NOS ESTUDOS!");
 console.log("====================================================================");
 console.log("📖 Consulte o README.md para informações detalhadas");

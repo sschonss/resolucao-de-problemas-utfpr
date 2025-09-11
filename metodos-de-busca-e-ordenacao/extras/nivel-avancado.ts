@@ -4,6 +4,107 @@
  */
 
 /**
+ * FUNÇÕES AUXILIARES MATEMÁTICAS
+ * Implementações manuais para compatibilidade
+ */
+class MathUtils {
+    /**
+     * Logaritmo base 2 implementado manualmente
+     */
+    static log2(n: number): number {
+        if (n <= 0) return -Infinity;
+        if (n === 1) return 0;
+        
+        let resultado = 0;
+        let temp = n;
+        
+        // Usando logaritmo natural: log2(n) = ln(n) / ln(2)
+        // Implementação aproximada do logaritmo natural
+        while (temp > 1) {
+            temp = temp / 2;
+            resultado++;
+        }
+        
+        // Refinamento para maior precisão
+        if (temp > 0.5) {
+            resultado += temp;
+        }
+        
+        return resultado;
+    }
+    
+    /**
+     * Logaritmo base 3 implementado manualmente
+     */
+    static log3(n: number): number {
+        if (n <= 0) return -Infinity;
+        if (n === 1) return 0;
+        
+        let resultado = 0;
+        let temp = n;
+        
+        while (temp > 1) {
+            temp = temp / 3;
+            resultado++;
+        }
+        
+        // Refinamento para maior precisão
+        if (temp > 0.33) {
+            resultado += temp;
+        }
+        
+        return resultado;
+    }
+    
+    /**
+     * Logaritmo natural implementado manualmente (aproximação)
+     */
+    static log(n: number): number {
+        if (n <= 0) return -Infinity;
+        if (n === 1) return 0;
+        
+        // Aproximação usando série de Taylor
+        let x = (n - 1) / (n + 1);
+        let x_squared = x * x;
+        let resultado = x;
+        let termo = x;
+        
+        for (let i = 1; i < 10; i++) {
+            termo *= x_squared;
+            resultado += termo / (2 * i + 1);
+        }
+        
+        return 2 * resultado;
+    }
+    
+    /**
+     * Math.ceil implementado manualmente
+     */
+    static ceil(n: number): number {
+        const intPart = Math.floor(n);
+        return (n > intPart) ? intPart + 1 : intPart;
+    }
+    
+    /**
+     * Math.round implementado manualmente
+     */
+    static round(n: number): number {
+        return Math.floor(n + 0.5);
+    }
+    
+    /**
+     * Repetir string implementado manualmente
+     */
+    static repeat(str: string, count: number): string {
+        let resultado = "";
+        for (let i = 0; i < count; i++) {
+            resultado += str;
+        }
+        return resultado;
+    }
+}
+
+/**
  * EXERCÍCIO EXTRA 7: HEAP SORT COMPLETO
  * Algoritmo baseado em árvore binária heap - O(n log n) garantido!
  */
@@ -227,9 +328,9 @@ class BuscaAvancada {
         
         // Simular contadores para cada algoritmo
         const tamanho = array.length;
-        const maxComparacoesBinaria = Math.ceil(Math.log2(tamanho));
-        const maxComparacoesTernaria = Math.ceil(Math.log(tamanho) / Math.log(3));
-        const maxComparacoesInterpolada = Math.ceil(Math.log2(Math.log2(tamanho))); // Para distribuição uniforme
+        const maxComparacoesBinaria = MathUtils.ceil(MathUtils.log2(tamanho));
+        const maxComparacoesTernaria = MathUtils.ceil(MathUtils.log3(tamanho));
+        const maxComparacoesInterpolada = MathUtils.ceil(MathUtils.log2(MathUtils.log2(tamanho))); // Para distribuição uniforme
         
         console.log(`\n📏 Para array de ${tamanho} elementos:`);
         console.log(`   🔍 Busca Linear: até ${tamanho} comparações`);
@@ -392,7 +493,7 @@ class AlgoritmosHibridos {
      */
     static introSort(array: number[]): number[] {
         const arr = [...array];
-        const maxDepth = 2 * Math.floor(Math.log2(arr.length));
+        const maxDepth = 2 * Math.floor(MathUtils.log2(arr.length));
         
         console.log("🔀 INTRO SORT (usado no C++)");
         console.log(`Array inicial: [${arr.join(', ')}]`);
