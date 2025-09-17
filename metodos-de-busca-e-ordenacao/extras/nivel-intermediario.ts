@@ -364,6 +364,46 @@ class QuickSortExplicado {
 console.log("🟡 EXERCÍCIOS EXTRAS - NÍVEL INTERMEDIÁRIO");
 console.log("============================================================");
 
+/**
+ * EXERCÍCIO EXTRA 7: SEGUNDO MAIOR VALOR
+ * Encontre o segundo maior valor em um array (O(n)).
+ * Exemplo: [10, 5, 8, 12, 7] => 10
+ */
+function findSecondLargest(array: number[]): number | null {
+    let max = -Infinity, second = -Infinity;
+    for (let n of array) {
+        if (n > max) {
+            second = max;
+            max = n;
+        } else if (n > second && n < max) {
+            second = n;
+        }
+    }
+    return second === -Infinity ? null : second;
+}
+console.log("\n🟡 EXERCÍCIO EXTRA 7: SEGUNDO MAIOR VALOR");
+console.log(`findSecondLargest([10,5,8,12,7]) = ${findSecondLargest([10,5,8,12,7])}`);
+console.log(`findSecondLargest([1,2,3,4]) = ${findSecondLargest([1,2,3,4])}`);
+
+/**
+ * EXERCÍCIO EXTRA 8: ELEMENTO MAJORITÁRIO
+ * Encontre o elemento que aparece mais da metade das vezes (Boyer-Moore).
+ * Exemplo: [3,3,4,2,3,3,2,3,3] => 3
+ */
+function findMajorityElement(array: number[]): number | null {
+    let count = 0, candidate = null;
+    for (let n of array) {
+        if (count === 0) candidate = n;
+        count += (n === candidate) ? 1 : -1;
+    }
+    // Verifica se realmente é majoritário
+    let ocorrencias = 0;
+    for (let n of array) if (n === candidate) ocorrencias++;
+    return ocorrencias > array.length / 2 ? candidate : null;
+}
+console.log("\n🟡 EXERCÍCIO EXTRA 8: ELEMENTO MAJORITÁRIO");
+console.log(`findMajorityElement([3,3,4,2,3,3,2,3,3]) = ${findMajorityElement([3,3,4,2,3,3,2,3,3])}`);
+console.log(`findMajorityElement([1,2,3,4]) = ${findMajorityElement([1,2,3,4])}`);
 console.log("\n📚 EXERCÍCIO 4: MERGE SORT EDUCATIVO\n");
 
 console.log("🔥 DEMONSTRAÇÃO DO MERGE SORT:");

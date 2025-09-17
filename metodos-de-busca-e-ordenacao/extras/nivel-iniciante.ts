@@ -305,6 +305,38 @@ const resultado = InsertionSortEducativo.ordenarComMetricas(exemploArray);
 console.log(`Array [${exemploArray.join(', ')}] → [${resultado.arrayOrdenado.join(', ')}]`);
 console.log(`Comparações: ${resultado.comparacoes}, Movimentações: ${resultado.movimentacoes}`);
 
+/**
+ * EXERCÍCIO EXTRA 7: MAIOR VALOR ÚNICO
+ * Dado um array, encontre o maior valor que aparece apenas uma vez.
+ * Exemplo: [1, 2, 2, 3, 3, 4] => 4
+ */
+function findLargestUnique(array: number[]): number | null {
+    const counts: {[key: number]: number} = {};
+    for (let n of array) counts[n] = (counts[n] || 0) + 1;
+    let max = null;
+    for (let n in counts) {
+        if (counts[n] === 1 && (max === null || +n > max)) max = +n;
+    }
+    return max;
+}
+console.log("\n🟢 EXERCÍCIO EXTRA 7: MAIOR VALOR ÚNICO");
+console.log(`findLargestUnique([1,2,2,3,3,4]) = ${findLargestUnique([1,2,2,3,3,4])}`);
+console.log(`findLargestUnique([7,7,8,8,9]) = ${findLargestUnique([7,7,8,8,9])}`);
+
+/**
+ * EXERCÍCIO EXTRA 8: ELEMENTO QUE APARECE UMA VEZ
+ * Todos os elementos aparecem duas vezes, exceto um. Encontre esse elemento.
+ * Exemplo: [2,2,3,3,4] => 4
+ * Dica: use XOR para O(n) e O(1) espaço.
+ */
+function findSingle(array: number[]): number {
+    let result = 0;
+    for (let n of array) result ^= n;
+    return result;
+}
+console.log("\n🟢 EXERCÍCIO EXTRA 8: ELEMENTO QUE APARECE UMA VEZ");
+console.log(`findSingle([2,2,3,3,4]) = ${findSingle([2,2,3,3,4])}`);
+console.log(`findSingle([1,1,2,2,99]) = ${findSingle([1,1,2,2,99])}`);
 
 /**
  * EXERCÍCIO EXTRA 4: ENCONTRAR O NÚMERO ÚNICO

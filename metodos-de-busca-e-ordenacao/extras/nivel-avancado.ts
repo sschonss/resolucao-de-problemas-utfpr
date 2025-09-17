@@ -553,6 +553,60 @@ class AlgoritmosHibridos {
 console.log("🔴 EXERCÍCIOS EXTRAS - NÍVEL AVANÇADO");
 console.log("============================================================");
 
+/**
+ * EXERCÍCIO EXTRA 10: K-ÉSIMO MAIOR ELEMENTO (QUICKSELECT)
+ * Encontre o k-ésimo maior elemento em O(n) médio.
+ * Exemplo: [7,10,4,3,20,15], k=3 => 7
+ */
+function quickSelect(arr: number[], k: number): number {
+    function select(a: number[], l: number, r: number, k: number): number {
+        if (l === r) return a[l];
+        let pivot = a[r], p = l;
+        for (let i = l; i < r; i++) {
+            if (a[i] <= pivot) {
+                [a[i], a[p]] = [a[p], a[i]];
+                p++;
+            }
+        }
+        [a[p], a[r]] = [a[r], a[p]];
+        let count = p - l + 1;
+        if (count === k) return a[p];
+        if (k < count) return select(a, l, p - 1, k);
+        return select(a, p + 1, r, k - count);
+    }
+    return select([...arr], 0, arr.length - 1, k);
+}
+console.log("\n🔴 EXERCÍCIO EXTRA 10: K-ÉSIMO MAIOR ELEMENTO");
+console.log(`quickSelect([7,10,4,3,20,15], 3) = ${quickSelect([7,10,4,3,20,15], 3)}`);
+console.log(`quickSelect([1,2,3,4,5], 2) = ${quickSelect([1,2,3,4,5], 2)}`);
+
+/**
+ * EXERCÍCIO EXTRA 11: ELEMENTOS QUE APARECEM MAIS DE N/3 VEZES
+ * Exemplo: [1,2,3,1,2,1,1,2,2] => [1,2]
+ */
+function findElementsMoreThanNby3(array: number[]): number[] {
+    let count1 = 0, count2 = 0, cand1 = null, cand2 = null;
+    for (let n of array) {
+        if (cand1 !== null && n === cand1) count1++;
+        else if (cand2 !== null && n === cand2) count2++;
+        else if (count1 === 0) { cand1 = n; count1 = 1; }
+        else if (count2 === 0) { cand2 = n; count2 = 1; }
+        else { count1--; count2--; }
+    }
+    // Verifica candidatos
+    let res: number[] = [];
+    let c1 = 0, c2 = 0;
+    for (let n of array) {
+        if (n === cand1) c1++;
+        else if (n === cand2) c2++;
+    }
+    if (c1 > array.length/3) res.push(cand1!);
+    if (cand2 !== cand1 && c2 > array.length/3) res.push(cand2!);
+    return res;
+}
+console.log("\n🔴 EXERCÍCIO EXTRA 11: ELEMENTOS MAIS DE N/3 VEZES");
+console.log(`findElementsMoreThanNby3([1,2,3,1,2,1,1,2,2]) = [${findElementsMoreThanNby3([1,2,3,1,2,1,1,2,2])}]");
+console.log(`findElementsMoreThanNby3([1,2,3,4,5]) = [${findElementsMoreThanNby3([1,2,3,4,5])}]");
 console.log("\n📚 EXERCÍCIO 7: HEAP SORT COMPLETO\n");
 
 const arrayHeap = [12, 11, 13, 5, 6, 7];
