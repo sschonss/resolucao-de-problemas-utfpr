@@ -311,11 +311,16 @@ console.log(`Comparações: ${resultado.comparacoes}, Movimentações: ${resulta
  * Exemplo: [1, 2, 2, 3, 3, 4] => 4
  */
 function findLargestUnique(array: number[]): number | null {
-    const counts: {[key: number]: number} = {};
-    for (let n of array) counts[n] = (counts[n] || 0) + 1;
-    let max = null;
-    for (let n in counts) {
-        if (counts[n] === 1 && (max === null || +n > max)) max = +n;
+    var counts: {[key: string]: number} = {};
+    for (var i = 0; i < array.length; i++) {
+        var n = array[i];
+        var key = '' + n;
+        if (!(key in counts)) counts[key] = 0;
+        counts[key]++;
+    }
+    var max: number | null = null;
+    for (var k in counts) {
+        if (counts[k] === 1 && (max === null || Number(k) > max)) max = Number(k);
     }
     return max;
 }
@@ -330,8 +335,10 @@ console.log(`findLargestUnique([7,7,8,8,9]) = ${findLargestUnique([7,7,8,8,9])}`
  * Dica: use XOR para O(n) e O(1) espaço.
  */
 function findSingle(array: number[]): number {
-    let result = 0;
-    for (let n of array) result ^= n;
+    var result = 0;
+    for (var i = 0; i < array.length; i++) {
+        result = result ^ array[i];
+    }
     return result;
 }
 console.log("\n🟢 EXERCÍCIO EXTRA 8: ELEMENTO QUE APARECE UMA VEZ");
