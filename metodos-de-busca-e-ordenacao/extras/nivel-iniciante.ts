@@ -304,3 +304,57 @@ const exemploArray = [4, 3, 2, 1];
 const resultado = InsertionSortEducativo.ordenarComMetricas(exemploArray);
 console.log(`Array [${exemploArray.join(', ')}] → [${resultado.arrayOrdenado.join(', ')}]`);
 console.log(`Comparações: ${resultado.comparacoes}, Movimentações: ${resultado.movimentacoes}`);
+
+
+/**
+ * EXERCÍCIO EXTRA 4: ENCONTRAR O NÚMERO ÚNICO
+ * Dado um array onde todos os números são iguais exceto um, encontre o diferente.
+ * Exemplo: [1, 1, 1, 2, 1, 1] => 2
+ * COMPLEXIDADE: O(n) no pior caso, mas otimizado para grandes arrays.
+ */
+function findUniq(array: number[]): number {
+    // Estratégia: verifica os 3 primeiros para saber qual é o valor repetido
+    let candidate = array[0] === array[1] ? array[0] : array[2] === array[0] ? array[2] : array[1];
+    for (let i = 0; i < array.length; i++) {
+        if (array[i] !== candidate) return array[i];
+    }
+    return candidate; // fallback (teoricamente nunca ocorre)
+}
+
+console.log("\n🟢 EXERCÍCIO EXTRA 4: ENCONTRAR O NÚMERO ÚNICO");
+console.log(`findUniq([ 1, 1, 1, 2, 1, 1 ]) = ${findUniq([ 1, 1, 1, 2, 1, 1 ])}`);
+console.log(`findUniq([ 0, 0, 0.55, 0, 0 ]) = ${findUniq([ 0, 0, 0.55, 0, 0 ])}`);
+
+/**
+ * EXERCÍCIO EXTRA 5: ENCONTRAR A STRING ÚNICA
+ * Dado um array de strings onde todas são iguais exceto uma, encontre a diferente.
+ * Exemplo: ["abc", "abc", "xyz", "abc"] => "xyz"
+ */
+function findUniqueString(array: string[]): string {
+    let candidate = array[0] === array[1] ? array[0] : array[2] === array[0] ? array[2] : array[1];
+    for (let i = 0; i < array.length; i++) {
+        if (array[i] !== candidate) return array[i];
+    }
+    return candidate;
+}
+
+console.log("\n🟢 EXERCÍCIO EXTRA 5: ENCONTRAR A STRING ÚNICA");
+console.log(`findUniqueString([ 'abc', 'abc', 'xyz', 'abc' ]) = ${findUniqueString([ 'abc', 'abc', 'xyz', 'abc' ])}`);
+console.log(`findUniqueString([ 'foo', 'bar', 'foo', 'foo' ]) = ${findUniqueString([ 'foo', 'bar', 'foo', 'foo' ])}`);
+
+/**
+ * EXERCÍCIO EXTRA 6: ENCONTRAR O OBJETO ÚNICO (SIMPLIFICADO)
+ * Dado um array de objetos simples (com propriedade 'id'), onde todos são iguais exceto um, encontre o diferente.
+ * Exemplo: [{{id:1}},{{id:1}},{{id:2}},{{id:1}}] => {id:2}
+ */
+function findUniqueObject(array: {id: number}[]): {id: number} {
+    let candidate = array[0].id === array[1].id ? array[0].id : array[2].id === array[0].id ? array[2].id : array[1].id;
+    for (let i = 0; i < array.length; i++) {
+        if (array[i].id !== candidate) return array[i];
+    }
+    return array[0];
+}
+
+console.log("\n🟢 EXERCÍCIO EXTRA 6: ENCONTRAR O OBJETO ÚNICO");
+console.log(`findUniqueObject([{{id:1}},{{id:1}},{{id:2}},{{id:1}}]) =`, findUniqueObject([{id:1},{id:1},{id:2},{id:1}]));
+console.log(`findUniqueObject([{{id:7}},{{id:7}},{{id:7}},{{id:3}},{{id:7}}]) =`, findUniqueObject([{id:7},{id:7},{id:7},{id:3},{id:7}]));
