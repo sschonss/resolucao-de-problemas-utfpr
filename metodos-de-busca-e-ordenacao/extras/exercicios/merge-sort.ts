@@ -7,7 +7,7 @@ function mergeSort(arr: number[]): number[] {
     var meio = Math.floor(arr.length / 2);
     var esquerda = mergeSort(arr.slice(0, meio));
     var direita = mergeSort(arr.slice(meio));
-    var resultado = [], i = 0, j = 0;
+    var resultado: number[] = [], i = 0, j = 0;
     while (i < esquerda.length && j < direita.length) {
         if (esquerda[i] < direita[j]) resultado.push(esquerda[i++]);
         else resultado.push(direita[j++]);
