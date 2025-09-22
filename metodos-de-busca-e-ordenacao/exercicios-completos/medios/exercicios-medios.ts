@@ -7,6 +7,16 @@ import {
     ResultadoExercicio
 } from '../base/classes-base';
 
+// Função auxiliar para verificar se array está ordenado
+function verificarOrdenado(array: number[]): boolean {
+    for (let i = 1; i < array.length; i++) {
+        if (array[i] < array[i - 1]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 // ==================== EXERCÍCIO 1: MERGE SORT ====================
 
 /**
@@ -897,6 +907,660 @@ function exercicio12(): void {
     console.log("Requer ordenado:", buscaExponencial.requerOrdenado() ? "Sim" : "Não");
 }
 
+// ==================== EXERCÍCIO 13: ORDENAÇÃO DE ARRAYS MULTIDIMENSIONAIS ====================
+
+/**
+ * EXERCÍCIO 13: Ordenação de arrays multidimensionais
+ * Dificuldade: Médio
+ *
+ * Descrição: Implemente algoritmos para ordenar arrays multidimensionais
+ * (matrizes) por linhas, colunas ou elementos individuais.
+ */
+
+class OrdenadorMatrizes {
+    // Ordenar cada linha da matriz
+    static ordenarLinhas(matriz: number[][]): number[][] {
+        return matriz.map(linha => {
+            const sorter = new QuickSort();
+            return sorter.ordenar(linha);
+        });
+    }
+
+    // Ordenar cada coluna da matriz
+    static ordenarColunas(matriz: number[][]): number[][] {
+        if (matriz.length === 0 || matriz[0].length === 0) return matriz;
+
+        const resultado = matriz.map(linha => [...linha]);
+        const numLinhas = resultado.length;
+        const numColunas = resultado[0].length;
+
+        for (let col = 0; col < numColunas; col++) {
+            const coluna = [];
+            for (let lin = 0; lin < numLinhas; lin++) {
+                coluna.push(resultado[lin][col]);
+            }
+
+            const sorter = new QuickSort();
+            const colunaOrdenada = sorter.ordenar(coluna);
+
+            for (let lin = 0; lin < numLinhas; lin++) {
+                resultado[lin][col] = colunaOrdenada[lin];
+            }
+        }
+
+        return resultado;
+    }
+
+    // Transformar matriz em array 1D, ordenar e reconstruir
+    static ordenarElementos(matriz: number[][]): number[][] {
+        const todosElementos = matriz.flat();
+        const sorter = new MergeSort();
+        const elementosOrdenados = sorter.ordenar(todosElementos);
+
+        // Reconstruir matriz mantendo dimensões
+        const resultado: number[][] = [];
+        let indice = 0;
+
+        for (const linha of matriz) {
+            const novaLinha: number[] = [];
+            for (let i = 0; i < linha.length; i++) {
+                novaLinha.push(elementosOrdenados[indice++]);
+            }
+            resultado.push(novaLinha);
+        }
+
+        return resultado;
+    }
+
+    // Ordenar linhas baseado na soma dos elementos
+    static ordenarLinhasPorSoma(matriz: number[][]): number[][] {
+        return [...matriz].sort((a, b) => {
+            const somaA = a.reduce((acc, val) => acc + val, 0);
+            const somaB = b.reduce((acc, val) => acc + val, 0);
+            return somaA - somaB;
+        });
+    }
+}
+
+function exercicio13(): void {
+    console.log("\n=== EXERCÍCIO 13: ORDENAÇÃO DE MATRIZES ===\n");
+
+    const matriz = [
+        [3, 1, 4, 1],
+        [5, 9, 2, 6],
+        [5, 3, 5, 8],
+        [9, 7, 9, 3]
+    ];
+
+    console.log("Matriz original:");
+    matriz.forEach(linha => console.log("  [" + linha.join(", ") + "]"));
+
+    console.log("\nOrdenando linhas:");
+    const linhasOrdenadas = OrdenadorMatrizes.ordenarLinhas(matriz);
+    linhasOrdenadas.forEach(linha => console.log("  [" + linha.join(", ") + "]"));
+
+    console.log("\nOrdenando colunas:");
+    const colunasOrdenadas = OrdenadorMatrizes.ordenarColunas(matriz);
+    colunasOrdenadas.forEach(linha => console.log("  [" + linha.join(", ") + "]"));
+
+    console.log("\nOrdenando todos os elementos:");
+    const elementosOrdenados = OrdenadorMatrizes.ordenarElementos(matriz);
+    elementosOrdenados.forEach(linha => console.log("  [" + linha.join(", ") + "]"));
+
+    console.log("\nOrdenando linhas por soma:");
+    const linhasPorSoma = OrdenadorMatrizes.ordenarLinhasPorSoma(matriz);
+    linhasPorSoma.forEach(linha => console.log("  [" + linha.join(", ") + "]"));
+}
+
+// ==================== EXERCÍCIO 14: BUSCA EM ARRAY ROTACIONADO ====================
+
+/**
+ * EXERCÍCIO 14: Busca em array rotacionado
+ * Dificuldade: Médio
+ *
+ * Descrição: Implemente uma busca eficiente em um array que foi rotacionado
+ * em um ponto desconhecido. O array originalmente estava ordenado.
+ */
+
+class BuscaArrayRotacionado extends AlgoritmoBuscaBase<number> {
+    buscar(array: number[], elemento: number): number {
+        this.resetarEstatisticas();
+        return this.buscaRotacionada(array, elemento, 0, array.length - 1);
+    }
+
+    private buscaRotacionada(array: number[], elemento: number, esquerda: number, direita: number): number {
+        if (esquerda > direita) return -1;
+
+        const meio = Math.floor((esquerda + direita) / 2);
+
+        if (this.comparar(array[meio], elemento) === 0) {
+            return meio;
+        }
+
+        // Verificar se o lado esquerdo está ordenado
+        if (array[esquerda] <= array[meio]) {
+            // Lado esquerdo está ordenado
+            if (elemento >= array[esquerda] && elemento <= array[meio]) {
+                return this.buscaRotacionada(array, elemento, esquerda, meio - 1);
+            } else {
+                return this.buscaRotacionada(array, elemento, meio + 1, direita);
+            }
+        } else {
+            // Lado direito está ordenado
+            if (elemento >= array[meio] && elemento <= array[direita]) {
+                return this.buscaRotacionada(array, elemento, meio + 1, direita);
+            } else {
+                return this.buscaRotacionada(array, elemento, esquerda, meio - 1);
+            }
+        }
+    }
+
+    // Método adicional para encontrar o ponto de rotação
+    encontrarPontoRotacao(array: number[]): number {
+        let esquerda = 0;
+        let direita = array.length - 1;
+
+        while (esquerda < direita) {
+            const meio = Math.floor((esquerda + direita) / 2);
+
+            if (array[meio] > array[direita]) {
+                esquerda = meio + 1;
+            } else {
+                direita = meio;
+            }
+        }
+
+        return esquerda;
+    }
+
+    getNome(): string { return "Busca em Array Rotacionado"; }
+    getComplexidade(): string { return "O(log n)"; }
+    requerOrdenado(): boolean { return false; } // Array está ordenado mas rotacionado
+}
+
+function exercicio14(): void {
+    console.log("\n=== EXERCÍCIO 14: BUSCA EM ARRAY ROTACIONADO ===\n");
+
+    const buscaRotacionada = new BuscaArrayRotacionado();
+
+    // Array rotacionado (original: [1,2,3,4,5,6,7,8,9,10] rotacionado 4 posições)
+    const dados = [7, 8, 9, 10, 1, 2, 3, 4, 5, 6];
+    const elementos = [1, 5, 8, 11];
+
+    console.log("Array rotacionado:", dados);
+    console.log("Ponto de rotação:", buscaRotacionada.encontrarPontoRotacao(dados));
+
+    elementos.forEach(elemento => {
+        const { resultado, tempo } = MedidorPerformance.medirTempo(() =>
+            buscaRotacionada.buscar(dados, elemento)
+        );
+
+        console.log(`Buscar ${elemento}: índice ${resultado} (${tempo.toFixed(4)}ms)`);
+    });
+
+    console.log("Estatísticas totais:", buscaRotacionada.getEstatisticas());
+}
+
+// ==================== EXERCÍCIO 15: ANÁLISE DE ESTABILIDADE ====================
+
+/**
+ * EXERCÍCIO 15: Análise de estabilidade em algoritmos de ordenação
+ * Dificuldade: Médio
+ *
+ * Descrição: Demonstre a diferença entre algoritmos estáveis e não estáveis
+ * usando objetos com chave e valor secundário.
+ */
+
+interface ElementoOrdenacao {
+    chave: number;
+    valor: string;
+}
+
+class AnalisadorEstabilidade {
+    static criarDadosTeste(): ElementoOrdenacao[] {
+        return [
+            { chave: 3, valor: "A" },
+            { chave: 1, valor: "B" },
+            { chave: 3, valor: "C" },
+            { chave: 2, valor: "D" },
+            { chave: 1, valor: "E" },
+            { chave: 2, valor: "F" }
+        ];
+    }
+
+    static ordenarEstavel(dados: ElementoOrdenacao[]): ElementoOrdenacao[] {
+        // Merge Sort é estável
+        const sorter = new MergeSort();
+        return sorter.ordenar(dados.map(item => item.chave))
+            .map(chave => dados.find(item => item.chave === chave)!);
+    }
+
+    static ordenarNaoEstavel(dados: ElementoOrdenacao[]): ElementoOrdenacao[] {
+        // Quick Sort não é estável
+        const sorter = new QuickSort();
+        return sorter.ordenar(dados.map(item => item.chave))
+            .map(chave => dados.find(item => item.chave === chave)!);
+    }
+
+    static verificarEstabilidade(original: ElementoOrdenacao[], ordenado: ElementoOrdenacao[]): boolean {
+        // Verificar se elementos com mesma chave mantêm ordem relativa
+        for (let i = 0; i < ordenado.length - 1; i++) {
+            for (let j = i + 1; j < ordenado.length; j++) {
+                if (ordenado[i].chave === ordenado[j].chave) {
+                    // Encontrar posições originais
+                    const posI = original.findIndex(item =>
+                        item.chave === ordenado[i].chave && item.valor === ordenado[i].valor);
+                    const posJ = original.findIndex(item =>
+                        item.chave === ordenado[j].chave && item.valor === ordenado[j].valor);
+
+                    if (posI > posJ) {
+                        return false; // Ordem relativa não mantida
+                    }
+                }
+            }
+        }
+        return true;
+    }
+}
+
+function exercicio15(): void {
+    console.log("\n=== EXERCÍCIO 15: ANÁLISE DE ESTABILIDADE ===\n");
+
+    const dadosOriginais = AnalisadorEstabilidade.criarDadosTeste();
+
+    console.log("Dados originais:");
+    dadosOriginais.forEach(item => console.log(`  Chave: ${item.chave}, Valor: ${item.valor}`));
+
+    console.log("\nOrdenação com algoritmo ESTÁVEL (Merge Sort):");
+    const ordenadoEstavel = AnalisadorEstabilidade.ordenarEstavel(dadosOriginais);
+    ordenadoEstavel.forEach(item => console.log(`  Chave: ${item.chave}, Valor: ${item.valor}`));
+    console.log("Estável:", AnalisadorEstabilidade.verificarEstabilidade(dadosOriginais, ordenadoEstavel));
+
+    console.log("\nOrdenação com algoritmo NÃO ESTÁVEL (Quick Sort):");
+    const ordenadoNaoEstavel = AnalisadorEstabilidade.ordenarNaoEstavel(dadosOriginais);
+    ordenadoNaoEstavel.forEach(item => console.log(`  Chave: ${item.chave}, Valor: ${item.valor}`));
+    console.log("Estável:", AnalisadorEstabilidade.verificarEstabilidade(dadosOriginais, ordenadoNaoEstavel));
+
+    console.log("\n💡 Elementos com mesma chave mantêm ordem relativa apenas no algoritmo estável!");
+}
+
+// ==================== EXERCÍCIO 16: ORDENAÇÃO DE OBJETOS POR MÚLTIPLAS PROPRIEDADES ====================
+
+/**
+ * EXERCÍCIO 16: Ordenação de objetos por múltiplas propriedades
+ * Dificuldade: Médio
+ *
+ * Descrição: Implemente ordenação de arrays de objetos considerando
+ * múltiplas propriedades em ordem de prioridade.
+ */
+
+interface Pessoa {
+    nome: string;
+    idade: number;
+    salario: number;
+}
+
+class OrdenadorObjetos {
+    static ordenarPessoas(pessoas: Pessoa[], prioridades: (keyof Pessoa)[]): Pessoa[] {
+        return [...pessoas].sort((a, b) => {
+            for (const propriedade of prioridades) {
+                const valorA = a[propriedade];
+                const valorB = b[propriedade];
+
+                if (valorA < valorB) return -1;
+                if (valorA > valorB) return 1;
+            }
+            return 0;
+        });
+    }
+
+    static ordenarPessoasEstavel(pessoas: Pessoa[], prioridades: (keyof Pessoa)[]): Pessoa[] {
+        // Usar Merge Sort para estabilidade
+        const resultado = [...pessoas];
+
+        for (let i = prioridades.length - 1; i >= 0; i--) {
+            const propriedade = prioridades[i];
+            resultado.sort((a, b) => {
+                const valorA = a[propriedade];
+                const valorB = b[propriedade];
+
+                if (valorA < valorB) return -1;
+                if (valorA > valorB) return 1;
+                return 0;
+            });
+        }
+
+        return resultado;
+    }
+}
+
+function exercicio16(): void {
+    console.log("\n=== EXERCÍCIO 16: ORDENAÇÃO DE OBJETOS ===\n");
+
+    const pessoas: Pessoa[] = [
+        { nome: "Ana", idade: 25, salario: 3000 },
+        { nome: "João", idade: 30, salario: 2500 },
+        { nome: "Maria", idade: 25, salario: 3500 },
+        { nome: "Pedro", idade: 35, salario: 3000 },
+        { nome: "Lucas", idade: 30, salario: 2800 }
+    ];
+
+    console.log("Pessoas originais:");
+    pessoas.forEach(p => console.log(`  ${p.nome}: ${p.idade} anos, R$ ${p.salario}`));
+
+    console.log("\nOrdenação por idade, depois salário:");
+    const ordenadoIdadeSalario = OrdenadorObjetos.ordenarPessoas(pessoas, ['idade', 'salario']);
+    ordenadoIdadeSalario.forEach(p => console.log(`  ${p.nome}: ${p.idade} anos, R$ ${p.salario}`));
+
+    console.log("\nOrdenação por salário, depois idade:");
+    const ordenadoSalarioIdade = OrdenadorObjetos.ordenarPessoas(pessoas, ['salario', 'idade']);
+    ordenadoSalarioIdade.forEach(p => console.log(`  ${p.nome}: ${p.idade} anos, R$ ${p.salario}`));
+
+    console.log("\nOrdenação estável por múltiplas propriedades:");
+    const ordenadoEstavel = OrdenadorObjetos.ordenarPessoasEstavel(pessoas, ['idade', 'salario']);
+    ordenadoEstavel.forEach(p => console.log(`  ${p.nome}: ${p.idade} anos, R$ ${p.salario}`));
+}
+
+// ==================== EXERCÍCIO 17: BUSCA EM ARRAYS COM DUPLICATAS ====================
+
+/**
+ * EXERCÍCIO 17: Busca eficiente em arrays com muitos elementos duplicados
+ * Dificuldade: Médio
+ *
+ * Descrição: Implemente algoritmos otimizados para busca em arrays
+ * com alta frequência de elementos duplicados.
+ */
+
+class BuscaComDuplicatas extends AlgoritmoBuscaBase<number> {
+    buscar(array: number[], elemento: number): number {
+        this.resetarEstatisticas();
+        return this.buscaOtimizadaDuplicatas(array, elemento);
+    }
+
+    private buscaOtimizadaDuplicatas(array: number[], elemento: number): number {
+        // Para arrays com muitas duplicatas, usar busca linear otimizada
+        // que para quando encontra o primeiro elemento maior
+        for (let i = 0; i < array.length; i++) {
+            const comparacao = this.comparar(array[i], elemento);
+            if (comparacao === 0) {
+                return i;
+            }
+            // Se array está ordenado e encontramos elemento maior, podemos parar
+            if (comparacao > 0) {
+                return -1;
+            }
+        }
+        return -1;
+    }
+
+    // Buscar todas as ocorrências
+    buscarTodas(array: number[], elemento: number): number[] {
+        this.resetarEstatisticas();
+        const indices: number[] = [];
+
+        for (let i = 0; i < array.length; i++) {
+            if (this.comparar(array[i], elemento) === 0) {
+                indices.push(i);
+            } else if (indices.length > 0 && this.comparar(array[i], elemento) > 0) {
+                // Se já encontramos algumas ocorrências e o array está ordenado,
+                // podemos parar quando encontramos elemento maior
+                break;
+            }
+        }
+
+        return indices;
+    }
+
+    // Encontrar primeira e última ocorrência
+    encontrarIntervalo(array: number[], elemento: number): { primeiro: number, ultimo: number } {
+        this.resetarEstatisticas();
+
+        let primeiro = -1;
+        let ultimo = -1;
+
+        for (let i = 0; i < array.length; i++) {
+            if (this.comparar(array[i], elemento) === 0) {
+                if (primeiro === -1) primeiro = i;
+                ultimo = i;
+            } else if (ultimo !== -1 && this.comparar(array[i], elemento) > 0) {
+                // Se já encontramos o intervalo e o array está ordenado, podemos parar
+                break;
+            }
+        }
+
+        return { primeiro, ultimo };
+    }
+
+    getNome(): string { return "Busca Otimizada para Duplicatas"; }
+    getComplexidade(): string { return "O(n) pior caso, O(k) para arrays ordenados com k duplicatas"; }
+    requerOrdenado(): boolean { return false; }
+}
+
+function exercicio17(): void {
+    console.log("\n=== EXERCÍCIO 17: BUSCA COM DUPLICATAS ===\n");
+
+    const buscaDuplicatas = new BuscaComDuplicatas();
+
+    // Array com muitas duplicatas
+    const dados = [1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 5, 5, 5];
+    const elementos = [1, 3, 6]; // 6 não existe
+
+    console.log("Array com duplicatas:", dados);
+
+    elementos.forEach(elemento => {
+        console.log(`\nBuscando elemento ${elemento}:`);
+
+        // Buscar primeira ocorrência
+        const primeira = buscaDuplicatas.buscar(dados, elemento);
+        console.log(`  Primeira ocorrência: índice ${primeira}`);
+
+        // Buscar todas as ocorrências
+        const todas = buscaDuplicatas.buscarTodas(dados, elemento);
+        console.log(`  Todas as ocorrências: índices [${todas.join(', ')}]`);
+
+        // Encontrar intervalo
+        const intervalo = buscaDuplicatas.encontrarIntervalo(dados, elemento);
+        console.log(`  Intervalo: ${intervalo.primeiro} até ${intervalo.ultimo}`);
+    });
+
+    console.log("\nEstatísticas totais:", buscaDuplicatas.getEstatisticas());
+}
+
+// ==================== EXERCÍCIO 18: ALGORITMOS HÍBRIDOS DE ORDENAÇÃO ====================
+
+/**
+ * EXERCÍCIO 18: Implementação de algoritmos híbridos de ordenação
+ * Dificuldade: Médio
+ *
+ * Descrição: Combine diferentes algoritmos de ordenação para criar
+ * versões híbridas otimizadas para diferentes cenários.
+ */
+
+class AlgoritmosHibridos {
+    // Intro Sort: Quick Sort + Heap Sort
+    static introSort(array: number[]): number[] {
+        const resultado = [...array];
+        const maxProfundidade = Math.floor(2 * Math.log2(resultado.length));
+
+        this.introSortRecursivo(resultado, 0, resultado.length - 1, maxProfundidade);
+        return resultado;
+    }
+
+    private static introSortRecursivo(array: number[], esquerda: number, direita: number, profundidade: number): void {
+        const tamanho = direita - esquerda + 1;
+
+        if (tamanho <= 16) {
+            // Para arrays pequenos, usar Insertion Sort
+            this.insertionSort(array, esquerda, direita);
+        } else if (profundidade === 0) {
+            // Profundidade máxima atingida, usar Heap Sort
+            this.heapSort(array, esquerda, direita);
+        } else {
+            // Usar Quick Sort
+            const pivo = this.particionar(array, esquerda, direita);
+            this.introSortRecursivo(array, esquerda, pivo - 1, profundidade - 1);
+            this.introSortRecursivo(array, pivo + 1, direita, profundidade - 1);
+        }
+    }
+
+    // Tim Sort: Merge Sort + Insertion Sort
+    static timSort(array: number[]): number[] {
+        const resultado = [...array];
+        const RUN = 32; // Tamanho mínimo das runs
+
+        // Ordenar runs individuais com Insertion Sort
+        for (let i = 0; i < resultado.length; i += RUN) {
+            this.insertionSort(resultado, i, Math.min(i + RUN - 1, resultado.length - 1));
+        }
+
+        // Mesclar runs usando Merge Sort
+        for (let tamanho = RUN; tamanho < resultado.length; tamanho *= 2) {
+            for (let esquerda = 0; esquerda < resultado.length; esquerda += 2 * tamanho) {
+                const meio = esquerda + tamanho - 1;
+                const direita = Math.min(esquerda + 2 * tamanho - 1, resultado.length - 1);
+
+                if (meio < direita) {
+                    this.mesclar(resultado, esquerda, meio, direita);
+                }
+            }
+        }
+
+        return resultado;
+    }
+
+    // Métodos auxiliares
+    private static insertionSort(array: number[], esquerda: number, direita: number): void {
+        for (let i = esquerda + 1; i <= direita; i++) {
+            const chave = array[i];
+            let j = i - 1;
+
+            while (j >= esquerda && array[j] > chave) {
+                array[j + 1] = array[j];
+                j--;
+            }
+
+            array[j + 1] = chave;
+        }
+    }
+
+    private static heapSort(array: number[], esquerda: number, direita: number): void {
+        // Implementação simplificada de Heap Sort para subarray
+        const n = direita - esquerda + 1;
+
+        // Construir heap
+        for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
+            this.heapify(array, n, i, esquerda);
+        }
+
+        // Extrair elementos
+        for (let i = n - 1; i > 0; i--) {
+            [array[esquerda], array[esquerda + i]] = [array[esquerda + i], array[esquerda]];
+            this.heapify(array, i, 0, esquerda);
+        }
+    }
+
+    private static heapify(array: number[], n: number, i: number, offset: number): void {
+        let maior = i;
+        const esquerda = 2 * i + 1;
+        const direita = 2 * i + 2;
+
+        if (esquerda < n && array[offset + esquerda] > array[offset + maior]) {
+            maior = esquerda;
+        }
+
+        if (direita < n && array[offset + direita] > array[offset + maior]) {
+            maior = direita;
+        }
+
+        if (maior !== i) {
+            [array[offset + i], array[offset + maior]] = [array[offset + maior], array[offset + i]];
+            this.heapify(array, n, maior, offset);
+        }
+    }
+
+    private static particionar(array: number[], esquerda: number, direita: number): number {
+        const pivo = array[direita];
+        let i = esquerda - 1;
+
+        for (let j = esquerda; j < direita; j++) {
+            if (array[j] <= pivo) {
+                i++;
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        [array[i + 1], array[direita]] = [array[direita], array[i + 1]];
+        return i + 1;
+    }
+
+    private static mesclar(array: number[], esquerda: number, meio: number, direita: number): void {
+        const n1 = meio - esquerda + 1;
+        const n2 = direita - meio;
+
+        const esquerdaArray = array.slice(esquerda, meio + 1);
+        const direitaArray = array.slice(meio + 1, direita + 1);
+
+        let i = 0, j = 0, k = esquerda;
+
+        while (i < n1 && j < n2) {
+            if (esquerdaArray[i] <= direitaArray[j]) {
+                array[k] = esquerdaArray[i];
+                i++;
+            } else {
+                array[k] = direitaArray[j];
+                j++;
+            }
+            k++;
+        }
+
+        while (i < n1) {
+            array[k] = esquerdaArray[i];
+            i++;
+            k++;
+        }
+
+        while (j < n2) {
+            array[k] = direitaArray[j];
+            j++;
+            k++;
+        }
+    }
+}
+
+function exercicio18(): void {
+    console.log("\n=== EXERCÍCIO 18: ALGORITMOS HÍBRIDOS ===\n");
+
+    const dados = ArrayUtils.gerarAleatorio(100, 1, 1000);
+
+    console.log("Array original (primeiros 20 elementos):", dados.slice(0, 20));
+
+    console.log("\nIntro Sort (Quick + Heap + Insertion):");
+    const { resultado: introResultado, tempo: introTempo } = MedidorPerformance.medirTempo(() =>
+        AlgoritmosHibridos.introSort(dados)
+    );
+    console.log(`  Tempo: ${introTempo.toFixed(4)}ms`);
+    console.log("  Ordenado corretamente:", verificarOrdenado(introResultado));
+
+    console.log("\nTim Sort (Merge + Insertion):");
+    const { resultado: timResultado, tempo: timTempo } = MedidorPerformance.medirTempo(() =>
+        AlgoritmosHibridos.timSort(dados)
+    );
+    console.log(`  Tempo: ${timTempo.toFixed(4)}ms`);
+    console.log("  Ordenado corretamente:", verificarOrdenado(timResultado));
+
+    console.log("\nComparação com algoritmos puros:");
+    const quickSort = new QuickSort();
+    const mergeSort = new MergeSort();
+
+    const quickTempo = MedidorPerformance.medirTempo(() => quickSort.ordenar(dados)).tempo;
+    const mergeTempo = MedidorPerformance.medirTempo(() => mergeSort.ordenar(dados)).tempo;
+
+    console.log(`  Quick Sort: ${quickTempo.toFixed(4)}ms`);
+    console.log(`  Merge Sort: ${mergeTempo.toFixed(4)}ms`);
+    console.log(`  Intro Sort: ${introTempo.toFixed(4)}ms`);
+    console.log(`  Tim Sort: ${timTempo.toFixed(4)}ms`);
+}
+
 // ==================== EXECUÇÃO DOS EXERCÍCIOS ====================
 
 function executarExerciciosMedios(): void {
@@ -915,6 +1579,12 @@ function executarExerciciosMedios(): void {
     exercicio10();
     exercicio11();
     exercicio12();
+    exercicio13();
+    exercicio14();
+    exercicio15();
+    exercicio16();
+    exercicio17();
+    exercicio18();
 
     console.log("\n✅ Todos os exercícios médios foram executados!");
 }
@@ -929,5 +1599,18 @@ export {
     CountingSort,
     ArvoreBinariaBusca,
     RadixSort,
+    BucketSort,
+    CombSort,
+    BuscaTernaria,
+    BuscaExponencial,
+    OrdenadorMatrizes,
+    BuscaArrayRotacionado,
+    AnalisadorEstabilidade,
+    OrdenadorObjetos,
+    BuscaComDuplicatas,
+    AlgoritmosHibridos,
     executarExerciciosMedios
 };
+
+// Executar exercícios quando o arquivo for executado diretamente
+executarExerciciosMedios();
