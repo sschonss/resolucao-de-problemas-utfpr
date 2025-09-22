@@ -7,6 +7,39 @@ import {
     ResultadoExercicio
 } from '../base/classes-base';
 
+// Importar algoritmos de ordenação dos exercícios médios
+import {
+    QuickSort
+} from '../medios/exercicios-medios';
+
+// Classe InsertionSort local para o desafio
+class InsertionSort extends AlgoritmoOrdenacaoBase<number> {
+    ordenar(array: number[]): number[] {
+        this.resetarEstatisticas();
+        const resultado = [...array];
+        const n = resultado.length;
+
+        for (let i = 1; i < n; i++) {
+            const chave = resultado[i];
+            let j = i - 1;
+
+            while (j >= 0 && this.comparar(resultado[j], chave) > 0) {
+                resultado[j + 1] = resultado[j];
+                this.trocas++;
+                j--;
+            }
+
+            resultado[j + 1] = chave;
+        }
+
+        return resultado;
+    }
+
+    getNome(): string { return "Insertion Sort"; }
+    getComplexidade(): string { return "O(n²)"; }
+    isEstavel(): boolean { return true; }
+}
+
 // ==================== EXERCÍCIO 1: TIMSORT (ALGORITMO HÍBRIDO) ====================
 
 /**
@@ -704,6 +737,365 @@ function exercicio6(): void {
     }
 }
 
+// ==================== DESAFIO EXTRA: BINGO ORDENADO vs NÃO ORDENADO ====================
+
+/**
+ * DESAFIO EXTRA: Bingo com Estratégias de Ordenação e Busca
+ * Dificuldade: Especial (Combina múltiplos algoritmos)
+ *
+ * Descrição: Implemente um sistema de bingo que usa diferentes estratégias
+ * de ordenação e busca dependendo do tipo de jogo. O desafio envolve:
+ * - Bingo Ordenado: cartelas mantidas ordenadas para busca binária rápida
+ * - Bingo Não Ordenado: cartelas desordenadas com busca linear
+ * - Estratégias híbridas para otimização de performance
+ */
+
+interface ICartelaBingo {
+    adicionarNumero(numero: number): void;
+    verificarNumero(numero: number): boolean;
+    estaCompleta(): boolean;
+    getNumeros(): number[];
+    getTipo(): string;
+}
+
+class CartelaBingoOrdenada implements ICartelaBingo {
+    private numeros: number[] = [];
+    private readonly tamanhoMaximo: number;
+    private algoritmoOrdenacao: AlgoritmoOrdenacaoBase<number>;
+
+    constructor(tamanhoMaximo: number = 25, algoritmo?: AlgoritmoOrdenacaoBase<number>) {
+        this.tamanhoMaximo = tamanhoMaximo;
+        this.algoritmoOrdenacao = algoritmo || new QuickSort();
+    }
+
+    adicionarNumero(numero: number): void {
+        if (this.numeros.length >= this.tamanhoMaximo) return;
+
+        // Verificar se número já existe (usando busca binária se ordenado)
+        if (this.numeros.length > 0 && this.verificarNumero(numero)) return;
+
+        this.numeros.push(numero);
+        // Manter ordenado após inserção
+        this.numeros = this.algoritmoOrdenacao.ordenar(this.numeros);
+    }
+
+    verificarNumero(numero: number): boolean {
+        // Busca binária para arrays ordenados
+        let esquerda = 0;
+        let direita = this.numeros.length - 1;
+
+        while (esquerda <= direita) {
+            const meio = Math.floor((esquerda + direita) / 2);
+            if (this.numeros[meio] === numero) {
+                return true;
+            } else if (this.numeros[meio] < numero) {
+                esquerda = meio + 1;
+            } else {
+                direita = meio - 1;
+            }
+        }
+        return false;
+    }
+
+    estaCompleta(): boolean {
+        return this.numeros.length >= this.tamanhoMaximo;
+    }
+
+    getNumeros(): number[] {
+        return [...this.numeros];
+    }
+
+    getTipo(): string {
+        return "Ordenado (Busca Binária)";
+    }
+}
+
+class CartelaBingoNaoOrdenada implements ICartelaBingo {
+    private numeros: Set<number> = new Set();
+    private readonly tamanhoMaximo: number;
+
+    constructor(tamanhoMaximo: number = 25) {
+        this.tamanhoMaximo = tamanhoMaximo;
+    }
+
+    adicionarNumero(numero: number): void {
+        if (this.numeros.size >= this.tamanhoMaximo) return;
+        this.numeros.add(numero);
+    }
+
+    verificarNumero(numero: number): boolean {
+        return this.numeros.has(numero);
+    }
+
+    estaCompleta(): boolean {
+        return this.numeros.size >= this.tamanhoMaximo;
+    }
+
+    getNumeros(): number[] {
+        return Array.from(this.numeros);
+    }
+
+    getTipo(): string {
+        return "Não Ordenado (Busca em Set)";
+    }
+}
+
+class CartelaBingoHibrida implements ICartelaBingo {
+    private numeros: number[] = [];
+    private readonly tamanhoMaximo: number;
+    private readonly limiteParaOrdenacao: number;
+    private algoritmoOrdenacao: AlgoritmoOrdenacaoBase<number>;
+
+    constructor(tamanhoMaximo: number = 25, limiteParaOrdenacao: number = 10) {
+        this.tamanhoMaximo = tamanhoMaximo;
+        this.limiteParaOrdenacao = limiteParaOrdenacao;
+        this.algoritmoOrdenacao = new InsertionSort(); // Mais eficiente para arrays pequenos
+    }
+
+    adicionarNumero(numero: number): void {
+        if (this.numeros.length >= this.tamanhoMaximo) return;
+
+        // Verificar duplicatas
+        if (this.numeros.length < this.limiteParaOrdenacao) {
+            // Para arrays pequenos, usar busca linear simples
+            if (this.numeros.includes(numero)) return;
+        } else {
+            // Para arrays maiores, ordenar e usar busca binária
+            this.numeros = this.algoritmoOrdenacao.ordenar(this.numeros);
+            if (this.verificarNumero(numero)) return;
+        }
+
+        this.numeros.push(numero);
+    }
+
+    verificarNumero(numero: number): boolean {
+        if (this.numeros.length <= this.limiteParaOrdenacao) {
+            // Busca linear para arrays pequenos
+            return this.numeros.includes(numero);
+        } else {
+            // Busca binária para arrays ordenados
+            let esquerda = 0;
+            let direita = this.numeros.length - 1;
+
+            while (esquerda <= direita) {
+                const meio = Math.floor((esquerda + direita) / 2);
+                if (this.numeros[meio] === numero) {
+                    return true;
+                } else if (this.numeros[meio] < numero) {
+                    esquerda = meio + 1;
+                } else {
+                    direita = meio - 1;
+                }
+            }
+            return false;
+        }
+    }
+
+    estaCompleta(): boolean {
+        return this.numeros.length >= this.tamanhoMaximo;
+    }
+
+    getNumeros(): number[] {
+        return [...this.numeros];
+    }
+
+    getTipo(): string {
+        return `Híbrido (Linear até ${this.limiteParaOrdenacao}, depois Binária)`;
+    }
+}
+
+class JogoBingo {
+    private cartelas: ICartelaBingo[] = [];
+    private numerosSorteados: number[] = [];
+    private readonly intervaloNumeros: { min: number; max: number };
+
+    constructor(numCartelas: number = 3, intervalo: { min: number; max: number } = { min: 1, max: 75 }) {
+        this.intervaloNumeros = intervalo;
+
+        // Criar cartelas de diferentes tipos
+        this.cartelas.push(new CartelaBingoOrdenada(15));
+        this.cartelas.push(new CartelaBingoNaoOrdenada(15));
+        this.cartelas.push(new CartelaBingoHibrida(15));
+
+        // Limitar ao número solicitado
+        this.cartelas = this.cartelas.slice(0, numCartelas);
+
+        this.gerarCartelas();
+    }
+
+    private gerarCartelas(): void {
+        this.cartelas.forEach(cartela => {
+            const numerosDisponiveis = Array.from(
+                { length: this.intervaloNumeros.max - this.intervaloNumeros.min + 1 },
+                (_, i) => i + this.intervaloNumeros.min
+            );
+
+            // Embaralhar e pegar primeiros números
+            for (let i = numerosDisponiveis.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [numerosDisponiveis[i], numerosDisponiveis[j]] = [numerosDisponiveis[j], numerosDisponiveis[i]];
+            }
+
+            // Adicionar números à cartela (quantidade menor para teste)
+            const quantidadeNumeros = Math.floor(Math.random() * 10) + 5; // 5-15 números
+            for (let i = 0; i < quantidadeNumeros && i < numerosDisponiveis.length; i++) {
+                cartela.adicionarNumero(numerosDisponiveis[i]);
+            }
+        });
+    }
+
+    sortearNumero(): number {
+        let numero: number;
+        do {
+            numero = Math.floor(Math.random() * (this.intervaloNumeros.max - this.intervaloNumeros.min + 1)) + this.intervaloNumeros.min;
+        } while (this.numerosSorteados.includes(numero));
+
+        this.numerosSorteados.push(numero);
+        return numero;
+    }
+
+    verificarVencedores(): { cartelaIndex: number; tipo: string; numeros: number[] }[] {
+        const vencedores: { cartelaIndex: number; tipo: string; numeros: number[] }[] = [];
+
+        this.cartelas.forEach((cartela, index) => {
+            let todosPresentes = true;
+            const numerosCartela = cartela.getNumeros();
+
+            for (const numero of numerosCartela) {
+                if (!this.numerosSorteados.includes(numero)) {
+                    todosPresentes = false;
+                    break;
+                }
+            }
+
+            if (todosPresentes && numerosCartela.length > 0) {
+                vencedores.push({
+                    cartelaIndex: index,
+                    tipo: cartela.getTipo(),
+                    numeros: numerosCartela
+                });
+            }
+        });
+
+        return vencedores;
+    }
+
+    jogarRodada(): { numeroSorteado: number; vencedores: any[]; estatisticas: any } {
+        const numeroSorteado = this.sortearNumero();
+        const vencedores = this.verificarVencedores();
+
+        // Calcular estatísticas de performance
+        const estatisticas = this.cartelas.map((cartela, index) => {
+            const inicioTempo = performance.now();
+            const temNumero = cartela.verificarNumero(numeroSorteado);
+            const tempoVerificacao = performance.now() - inicioTempo;
+
+            return {
+                tipo: cartela.getTipo(),
+                tempoVerificacao: tempoVerificacao.toFixed(4) + 'ms',
+                temNumero,
+                totalNumeros: cartela.getNumeros().length
+            };
+        });
+
+        return {
+            numeroSorteado,
+            vencedores,
+            estatisticas
+        };
+    }
+
+    getStatus(): void {
+        console.log("\n=== STATUS DO JOGO BINGO ===");
+        console.log(`Números sorteados: [${this.numerosSorteados.join(', ')}]`);
+        console.log(`Total sorteados: ${this.numerosSorteados.length}`);
+
+        this.cartelas.forEach((cartela, index) => {
+            console.log(`\nCartela ${index + 1} (${cartela.getTipo()}):`);
+            console.log(`  Números: [${cartela.getNumeros().join(', ')}]`);
+            console.log(`  Completa: ${cartela.estaCompleta() ? 'Sim' : 'Não'}`);
+        });
+    }
+
+    getCartelas(): ICartelaBingo[] {
+        return this.cartelas;
+    }
+
+    getNumerosSorteados(): number[] {
+        return [...this.numerosSorteados];
+    }
+}
+
+function desafioBingo(): void {
+    console.log("🎯 DESAFIO EXTRA: BINGO ORDENADO vs NÃO ORDENADO\n");
+    console.log("====================================================\n");
+
+    console.log("Este desafio compara três estratégias diferentes para cartelas de bingo:");
+    console.log("1. Cartela Ordenada: Mantém números ordenados, usa busca binária");
+    console.log("2. Cartela Não Ordenada: Usa Set para busca O(1)");
+    console.log("3. Cartela Híbrida: Busca linear para poucos elementos, binária para muitos\n");
+
+    const jogo = new JogoBingo(3);
+
+    console.log("=== CARTELAS INICIAIS ===");
+    jogo.getStatus();
+
+    console.log("\n=== INICIANDO SORTEIOS ===");
+
+    let rodada = 1;
+    const maxRodadas = 20;
+
+    while (rodada <= maxRodadas && jogo.verificarVencedores().length === 0) {
+        console.log(`\n--- RODADA ${rodada} ---`);
+
+        const resultado = jogo.jogarRodada();
+
+        console.log(`Número sorteado: ${resultado.numeroSorteado}`);
+
+        console.log("Performance das verificações:");
+        resultado.estatisticas.forEach((stat: any, index: number) => {
+            console.log(`  Cartela ${index + 1} (${stat.tipo}): ${stat.tempoVerificacao} - ${stat.temNumero ? 'TEM' : 'NÃO TEM'}`);
+        });
+
+        if (resultado.vencedores.length > 0) {
+            console.log("\n🏆 VENCEDORES ENCONTRADOS!");
+            resultado.vencedores.forEach(vencedor => {
+                console.log(`  Cartela ${vencedor.cartelaIndex + 1} (${vencedor.tipo}) - Números: [${vencedor.numeros.join(', ')}]`);
+            });
+            break;
+        }
+
+        rodada++;
+    }
+
+    if (rodada > maxRodadas) {
+        console.log(`\n⏰ Limite de ${maxRodadas} rodadas atingido. Jogo encerrado sem vencedores.`);
+    }
+
+    console.log("\n=== ANÁLISE FINAL ===");
+    console.log(`Total de números sorteados: ${jogo.getNumerosSorteados().length}`);
+    console.log("Números sorteados:", jogo.getNumerosSorteados());
+
+    // Análise comparativa
+    console.log("\n📊 ANÁLISE COMPARATIVA DAS ESTRATÉGIAS:");
+    jogo.getCartelas().forEach((cartela, index) => {
+        const tipo = cartela.getTipo();
+        const numeros = cartela.getNumeros().length;
+        const sorteadosPresentes = cartela.getNumeros().filter(n => jogo.getNumerosSorteados().includes(n)).length;
+
+        console.log(`Cartela ${index + 1} (${tipo}):`);
+        console.log(`  - ${numeros} números na cartela`);
+        console.log(`  - ${sorteadosPresentes} números sorteados encontrados`);
+        console.log(`  - Eficiência: ${(sorteadosPresentes / jogo.getNumerosSorteados().length * 100).toFixed(1)}% dos sorteados estavam na cartela`);
+    });
+
+    console.log("\n💡 INSIGHTS:");
+    console.log("- Cartelas ordenadas são mais eficientes para busca em arrays grandes");
+    console.log("- Cartelas não ordenadas com Set têm busca O(1) mas usam mais memória");
+    console.log("- Estratégia híbrida adapta-se ao tamanho dos dados");
+    console.log("- A escolha da estratégia depende do tamanho esperado dos dados!");
+}
+
 // ==================== EXECUÇÃO DOS EXERCÍCIOS ====================
 
 function executarExerciciosDificeis(): void {
@@ -716,6 +1108,8 @@ function executarExerciciosDificeis(): void {
     exercicio4();
     exercicio5();
     exercicio6();
+    desafioBingo();
+    desafioBingo();
 
     console.log("\n✅ Todos os exercícios difíceis foram executados!");
 }
@@ -728,5 +1122,10 @@ export {
     DFS,
     BuscaKMP,
     Dijkstra,
+    CartelaBingoOrdenada,
+    CartelaBingoNaoOrdenada,
+    CartelaBingoHibrida,
+    JogoBingo,
+    desafioBingo,
     executarExerciciosDificeis
 };
