@@ -514,6 +514,398 @@ function exercicio10(): void {
     });
 }
 
+// ==================== EXERCÍCIO 11: ORDENAÇÃO POR SELEÇÃO RECURSIVA ====================
+
+/**
+ * EXERCÍCIO 11: Implementar Selection Sort Recursivo
+ * Dificuldade: Fácil
+ *
+ * Descrição: Implemente uma versão recursiva do Selection Sort.
+ * Encontre o menor elemento e coloque na posição correta recursivamente.
+ */
+
+class SelectionSortRecursivo extends AlgoritmoOrdenacaoBase<number> {
+    ordenar(array: number[]): number[] {
+        this.resetarEstatisticas();
+        const resultado = [...array];
+        this.selectionSortRecursivo(resultado, 0);
+        return resultado;
+    }
+
+    private selectionSortRecursivo(array: number[], inicio: number): void {
+        if (inicio >= array.length - 1) return;
+
+        // Encontrar índice do menor elemento
+        let menorIndice = inicio;
+        for (let i = inicio + 1; i < array.length; i++) {
+            if (this.comparar(array[i], array[menorIndice]) < 0) {
+                menorIndice = i;
+            }
+        }
+
+        // Trocar com o primeiro elemento não ordenado
+        if (menorIndice !== inicio) {
+            this.trocar(array, inicio, menorIndice);
+        }
+
+        // Chamada recursiva para o resto do array
+        this.selectionSortRecursivo(array, inicio + 1);
+    }
+
+    getNome(): string { return "Selection Sort Recursivo"; }
+    getComplexidade(): string { return "O(n²)"; }
+    isEstavel(): boolean { return false; }
+}
+
+function exercicio11(): void {
+    console.log("\n=== EXERCÍCIO 11: SELECTION SORT RECURSIVO ===\n");
+
+    const selectionSortRec = new SelectionSortRecursivo();
+    const dados = [64, 25, 12, 22, 11];
+
+    console.log("Array original:", dados);
+
+    const { resultado, tempo } = MedidorPerformance.medirTempo(() =>
+        selectionSortRec.ordenar(dados)
+    );
+
+    console.log("Array ordenado:", resultado);
+    console.log("Tempo de execução:", tempo.toFixed(4), "ms");
+    console.log("Estatísticas:", selectionSortRec.getEstatisticas());
+    console.log("Complexidade:", selectionSortRec.getComplexidade());
+    console.log("Estável:", selectionSortRec.isEstavel() ? "Sim" : "Não");
+}
+
+// ==================== EXERCÍCIO 12: BUSCA LINEAR MELHORADA ====================
+
+/**
+ * EXERCÍCIO 12: Implementar Busca Linear com Otimizações
+ * Dificuldade: Fácil
+ *
+ * Descrição: Implemente uma busca linear que guarda a última posição encontrada
+ * para otimizar buscas subsequentes pelo mesmo elemento.
+ */
+
+class BuscaLinearOtimizada extends AlgoritmoBuscaBase<number> {
+    private ultimaPosicao: number = -1;
+
+    buscar(array: number[], elemento: number): number {
+        this.resetarEstatisticas();
+
+        // Otimização: começar da última posição conhecida
+        let inicio = Math.max(0, this.ultimaPosicao - 5); // Buscar em uma janela
+
+        // Busca linear otimizada
+        for (let i = inicio; i < array.length; i++) {
+            if (this.comparar(array[i], elemento) === 0) {
+                this.ultimaPosicao = i;
+                return i;
+            }
+        }
+
+        // Se não encontrou na janela otimizada, buscar do início
+        for (let i = 0; i < inicio; i++) {
+            if (this.comparar(array[i], elemento) === 0) {
+                this.ultimaPosicao = i;
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    // Método para demonstrar a otimização
+    buscarMultiplasVezes(array: number[], elementos: number[]): { resultados: number[], comparacoesTotais: number } {
+        let comparacoesTotais = 0;
+        const resultados: number[] = [];
+
+        for (const elemento of elementos) {
+            this.resetarEstatisticas();
+            const indice = this.buscar(array, elemento);
+            resultados.push(indice);
+            comparacoesTotais += this.getEstatisticas().comparacoes;
+        }
+
+        return { resultados, comparacoesTotais };
+    }
+
+    getNome(): string { return "Busca Linear Otimizada"; }
+    getComplexidade(): string { return "O(n) médio, O(1) para elementos próximos"; }
+    requerOrdenado(): boolean { return false; }
+}
+
+function exercicio12(): void {
+    console.log("\n=== EXERCÍCIO 12: BUSCA LINEAR OTIMIZADA ===\n");
+
+    const buscaOtimizada = new BuscaLinearOtimizada();
+    const dados = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+
+    // Simular buscas por elementos próximos
+    const elementosParaBuscar = [30, 35, 40, 45, 50, 55, 60];
+
+    console.log("Array:", dados);
+    console.log("Buscando elementos:", elementosParaBuscar);
+
+    const { resultados, comparacoesTotais } = buscaOtimizada.buscarMultiplasVezes(dados, elementosParaBuscar);
+
+    console.log("Resultados das buscas:", resultados);
+    console.log("Comparações totais:", comparacoesTotais);
+    console.log("Comparações médias por busca:", (comparacoesTotais / elementosParaBuscar.length).toFixed(2));
+}
+
+// ==================== EXERCÍCIO 13: VERIFICADOR DE ORDENAÇÃO COM ANÁLISE ====================
+
+/**
+ * EXERCÍCIO 13: Verificar ordenação com análise detalhada
+ * Dificuldade: Fácil
+ *
+ * Descrição: Implemente um verificador que não só verifica se um array está ordenado,
+ * mas também identifica o tipo de ordenação e possíveis problemas.
+ */
+
+class AnalisadorOrdenacao {
+    static analisarOrdenacao(array: number[]): {
+        ordenado: boolean;
+        tipo: 'crescente' | 'decrescente' | 'desordenado';
+        primeiroErro?: number;
+        estatisticas: {
+            trocasNecessarias: number;
+            elementosForaOrdem: number;
+        }
+    } {
+        if (array.length <= 1) {
+            return {
+                ordenado: true,
+                tipo: 'crescente',
+                estatisticas: { trocasNecessarias: 0, elementosForaOrdem: 0 }
+            };
+        }
+
+        let crescente = true;
+        let decrescente = true;
+        let primeiroErro: number | undefined;
+        let elementosForaOrdem = 0;
+        let trocasNecessarias = 0;
+
+        // Verificar ordenação e contar problemas
+        for (let i = 1; i < array.length; i++) {
+            if (array[i] < array[i - 1]) {
+                crescente = false;
+                elementosForaOrdem++;
+                if (primeiroErro === undefined) {
+                    primeiroErro = i;
+                }
+            }
+            if (array[i] > array[i - 1]) {
+                decrescente = false;
+            }
+        }
+
+        // Calcular trocas necessárias (usando algoritmo de contagem de inversões simplificado)
+        const arrayOrdenado = [...array].sort((a, b) => a - b);
+        for (let i = 0; i < array.length; i++) {
+            if (array[i] !== arrayOrdenado[i]) {
+                trocasNecessarias++;
+            }
+        }
+
+        let tipo: 'crescente' | 'decrescente' | 'desordenado';
+        if (crescente) {
+            tipo = 'crescente';
+        } else if (decrescente) {
+            tipo = 'decrescente';
+        } else {
+            tipo = 'desordenado';
+        }
+
+        return {
+            ordenado: crescente || decrescente,
+            tipo,
+            primeiroErro,
+            estatisticas: { trocasNecessarias, elementosForaOrdem }
+        };
+    }
+
+    static sugerirAlgoritmo(array: number[]): string {
+        const analise = this.analisarOrdenacao(array);
+
+        if (analise.ordenado) {
+            return "Array já está ordenado!";
+        }
+
+        const n = array.length;
+        const foraOrdem = analise.estatisticas.elementosForaOrdem;
+
+        if (foraOrdem < n * 0.1) {
+            return "Use Insertion Sort (poucos elementos fora de ordem)";
+        } else if (foraOrdem < n * 0.5) {
+            return "Use Quick Sort ou Merge Sort (desordem moderada)";
+        } else {
+            return "Use Heap Sort (muito desordenado)";
+        }
+    }
+}
+
+function exercicio13(): void {
+    console.log("\n=== EXERCÍCIO 13: ANALISADOR DE ORDENAÇÃO ===\n");
+
+    const arrays = [
+        { nome: "Ordenado crescente", dados: [1, 2, 3, 4, 5] },
+        { nome: "Ordenado decrescente", dados: [5, 4, 3, 2, 1] },
+        { nome: "Quase ordenado", dados: [1, 2, 4, 3, 5] },
+        { nome: "Muito desordenado", dados: [3, 1, 4, 1, 5, 9, 2, 6] },
+        { nome: "Array vazio", dados: [] },
+        { nome: "Um elemento", dados: [42] }
+    ];
+
+    arrays.forEach(({ nome, dados }) => {
+        console.log(`\n--- ${nome} ---`);
+        console.log(`Dados: [${dados.join(', ')}]`);
+
+        const analise = AnalisadorOrdenacao.analisarOrdenacao(dados);
+        console.log(`Ordenado: ${analise.ordenado ? 'Sim' : 'Não'}`);
+        console.log(`Tipo: ${analise.tipo}`);
+        if (analise.primeiroErro !== undefined) {
+            console.log(`Primeiro erro no índice: ${analise.primeiroErro}`);
+        }
+        console.log(`Elementos fora de ordem: ${analise.estatisticas.elementosForaOrdem}`);
+        console.log(`Trocas necessárias: ${analise.estatisticas.trocasNecessarias}`);
+        console.log(`Algoritmo sugerido: ${AnalisadorOrdenacao.sugerirAlgoritmo(dados)}`);
+    });
+}
+
+// ==================== EXERCÍCIO 14: JOGO DA MEMÓRIA COM ORDENAÇÃO ====================
+
+/**
+ * EXERCÍCIO 14: Jogo da Memória com Estratégias de Ordenação
+ * Dificuldade: Fácil
+ *
+ * Descrição: Implemente um jogo da memória onde os jogadores precisam
+ * organizar cartas em ordem crescente usando diferentes algoritmos.
+ */
+
+class JogoMemoria {
+    private cartas: number[] = [];
+    private cartasViradas: Set<number> = new Set();
+    private readonly algoritmo: AlgoritmoOrdenacaoBase<number>;
+
+    constructor(tamanho: number = 8, algoritmo?: AlgoritmoOrdenacaoBase<number>) {
+        this.algoritmo = algoritmo || new BubbleSort();
+        this.gerarCartas(tamanho);
+    }
+
+    private gerarCartas(tamanho: number): void {
+        // Gerar pares de cartas
+        const numPares = Math.floor(tamanho / 2);
+        for (let i = 1; i <= numPares; i++) {
+            this.cartas.push(i, i); // Dois de cada número
+        }
+
+        // Embaralhar
+        for (let i = this.cartas.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [this.cartas[i], this.cartas[j]] = [this.cartas[j], this.cartas[i]];
+        }
+    }
+
+    virarCarta(posicao: number): { valor: number; parEncontrado: boolean; jogoCompleto: boolean } {
+        if (posicao < 0 || posicao >= this.cartas.length || this.cartasViradas.has(posicao)) {
+            throw new Error("Posição inválida ou carta já virada");
+        }
+
+        const valor = this.cartas[posicao];
+        this.cartasViradas.add(posicao);
+
+        // Verificar se encontrou par
+        let parEncontrado = false;
+        const cartasComMesmoValor = Array.from(this.cartasViradas)
+            .filter(pos => this.cartas[pos] === valor);
+
+        if (cartasComMesmoValor.length === 2) {
+            parEncontrado = true;
+        }
+
+        const jogoCompleto = this.cartasViradas.size === this.cartas.length;
+
+        return { valor, parEncontrado, jogoCompleto };
+    }
+
+    // Método para demonstrar ordenação das cartas encontradas
+    ordenarCartasEncontradas(): number[] {
+        const cartasEncontradas = Array.from(this.cartasViradas)
+            .map(pos => this.cartas[pos])
+            .filter((valor, index, array) => array.indexOf(valor) === index); // Remover duplicatas
+
+        return this.algoritmo.ordenar(cartasEncontradas);
+    }
+
+    getEstadoJogo(): {
+        cartas: (number | null)[];
+        cartasViradas: number[];
+        paresEncontrados: number;
+        progresso: number;
+    } {
+        const cartasExibidas = this.cartas.map((carta, index) =>
+            this.cartasViradas.has(index) ? carta : null
+        );
+
+        const valoresVirados = Array.from(this.cartasViradas).map(pos => this.cartas[pos]);
+        const paresEncontrados = Math.floor(valoresVirados.length / 2);
+
+        return {
+            cartas: cartasExibidas,
+            cartasViradas: Array.from(this.cartasViradas).sort((a, b) => a - b),
+            paresEncontrados,
+            progresso: (this.cartasViradas.size / this.cartas.length) * 100
+        };
+    }
+
+    getAlgoritmo(): string {
+        return this.algoritmo.getNome();
+    }
+}
+
+function exercicio14(): void {
+    console.log("\n=== EXERCÍCIO 14: JOGO DA MEMÓRIA COM ORDENAÇÃO ===\n");
+
+    const jogo = new JogoMemoria(8, new InsertionSort());
+
+    console.log(`Jogo criado com algoritmo: ${jogo.getAlgoritmo()}`);
+    console.log("Objetivo: Encontrar pares de cartas e organizá-las em ordem crescente\n");
+
+    // Simular algumas jogadas
+    const jogadas = [0, 4, 1, 7, 2, 5]; // Simulando jogador encontrando pares
+
+    jogadas.forEach((posicao, index) => {
+        try {
+            const resultado = jogo.virarCarta(posicao);
+            console.log(`Jogada ${index + 1}: Carta na posição ${posicao} = ${resultado.valor}`);
+
+            if (resultado.parEncontrado) {
+                console.log("  🎉 Par encontrado!");
+                const cartasOrdenadas = jogo.ordenarCartasEncontradas();
+                console.log(`  Cartas encontradas ordenadas: [${cartasOrdenadas.join(', ')}]`);
+            }
+
+            const estado = jogo.getEstadoJogo();
+            console.log(`  Progresso: ${estado.progresso.toFixed(1)}% (${estado.paresEncontrados} pares)`);
+
+            if (resultado.jogoCompleto) {
+                console.log("\n🏆 JOGO COMPLETO! Todas as cartas foram encontradas!");
+                const finalOrdenadas = jogo.ordenarCartasEncontradas();
+                console.log(`Cartas finais ordenadas: [${finalOrdenadas.join(', ')}]`);
+            }
+
+            console.log("");
+        } catch (error) {
+            console.log(`  Erro: ${(error as Error).message}`);
+        }
+    });
+
+    console.log("💡 O jogo demonstra como algoritmos de ordenação podem ser aplicados");
+    console.log("   em jogos e interfaces interativas para organizar dados dinâmicos!");
+}
+
 // ==================== EXECUÇÃO DOS EXERCÍCIOS ====================
 
 function executarExerciciosFaceis(): void {
@@ -530,6 +922,10 @@ function executarExerciciosFaceis(): void {
     exercicio8();
     exercicio9();
     exercicio10();
+    exercicio11();
+    exercicio12();
+    exercicio13();
+    exercicio14();
     
     console.log("\n✅ Todos os exercícios fáceis foram executados!");
 }
@@ -544,10 +940,12 @@ export {
     BubbleSortStrings,
     VerificadorOrdenacao,
     BuscaMultipla,
+    SelectionSortRecursivo,
+    BuscaLinearOtimizada,
+    AnalisadorOrdenacao,
+    JogoMemoria,
     executarExerciciosFaceis
 };
 
-// Executar se for o arquivo principal
-if (require.main === module) {
-    executarExerciciosFaceis();
-}
+// Executar exercícios quando o arquivo for executado diretamente
+executarExerciciosFaceis();

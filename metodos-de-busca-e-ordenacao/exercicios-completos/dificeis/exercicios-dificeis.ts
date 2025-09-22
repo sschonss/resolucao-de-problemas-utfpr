@@ -737,6 +737,524 @@ function exercicio6(): void {
     }
 }
 
+// ==================== EXERCÍCIO 7: ÁRVORE B ====================
+
+/**
+ * EXERCÍCIO 7: Implementar Árvore B
+ * Dificuldade: Difícil
+ *
+ * Descrição: Implemente uma árvore B simplificada com operações básicas
+ * de inserção e busca. Árvores B são usadas em bancos de dados e sistemas de arquivos.
+ */
+
+class NoArvoreB<T> {
+    constructor(
+        public chaves: T[] = [],
+        public filhos: NoArvoreB<T>[] = [],
+        public folha: boolean = true
+    ) {}
+}
+
+class ArvoreB<T> {
+    private raiz: NoArvoreB<T>;
+    private readonly ordem: number; // Número máximo de chaves por nó
+
+    constructor(ordem: number = 3) {
+        this.ordem = ordem;
+        this.raiz = new NoArvoreB<T>();
+    }
+
+    inserir(chave: T): void {
+        const raiz = this.raiz;
+
+        if (raiz.chaves.length === this.ordem - 1) {
+            // Raiz cheia, criar nova raiz
+            const novaRaiz = new NoArvoreB<T>();
+            novaRaiz.folha = false;
+            novaRaiz.filhos.push(raiz);
+            this.dividirNo(novaRaiz, 0);
+            this.raiz = novaRaiz;
+        }
+
+        this.inserirNaoCheio(this.raiz, chave);
+    }
+
+    private inserirNaoCheio(no: NoArvoreB<T>, chave: T): void {
+        let i = no.chaves.length - 1;
+
+        if (no.folha) {
+            // Inserir na posição correta
+            while (i >= 0 && chave < no.chaves[i]) {
+                i--;
+            }
+            no.chaves.splice(i + 1, 0, chave);
+        } else {
+            // Encontrar filho apropriado
+            while (i >= 0 && chave < no.chaves[i]) {
+                i--;
+            }
+            i++;
+
+            if (no.filhos[i].chaves.length === this.ordem - 1) {
+                this.dividirNo(no, i);
+                if (chave > no.chaves[i]) {
+                    i++;
+                }
+            }
+
+            this.inserirNaoCheio(no.filhos[i], chave);
+        }
+    }
+
+    private dividirNo(pai: NoArvoreB<T>, indice: number): void {
+        const filho = pai.filhos[indice];
+        const novoNo = new NoArvoreB<T>();
+        novoNo.folha = filho.folha;
+
+        // Mover metade das chaves para o novo nó
+        const meio = Math.floor(this.ordem / 2);
+        const chaveMeio = filho.chaves[meio];
+
+        novoNo.chaves = filho.chaves.splice(meio + 1);
+        filho.chaves.splice(meio, 1);
+
+        if (!filho.folha) {
+            novoNo.filhos = filho.filhos.splice(meio + 1);
+        }
+
+        // Inserir nova chave no pai
+        pai.chaves.splice(indice, 0, chaveMeio);
+        pai.filhos.splice(indice + 1, 0, novoNo);
+    }
+
+    buscar(chave: T): boolean {
+        return this.buscarRecursivo(this.raiz, chave);
+    }
+
+    private buscarRecursivo(no: NoArvoreB<T>, chave: T): boolean {
+        let i = 0;
+        while (i < no.chaves.length && chave > no.chaves[i]) {
+            i++;
+        }
+
+        if (i < no.chaves.length && chave === no.chaves[i]) {
+            return true;
+        }
+
+        if (no.folha) {
+            return false;
+        }
+
+        return this.buscarRecursivo(no.filhos[i], chave);
+    }
+
+    getAltura(): number {
+        return this.calcularAltura(this.raiz);
+    }
+
+    private calcularAltura(no: NoArvoreB<T>): number {
+        if (no.folha) return 0;
+        return 1 + this.calcularAltura(no.filhos[0]);
+    }
+
+    emOrdem(): T[] {
+        const resultado: T[] = [];
+        this.emOrdemRecursivo(this.raiz, resultado);
+        return resultado;
+    }
+
+    private emOrdemRecursivo(no: NoArvoreB<T>, resultado: T[]): void {
+        if (!no.folha) {
+            for (let i = 0; i < no.chaves.length; i++) {
+                this.emOrdemRecursivo(no.filhos[i], resultado);
+                resultado.push(no.chaves[i]);
+            }
+            this.emOrdemRecursivo(no.filhos[no.chaves.length], resultado);
+        } else {
+            resultado.push(...no.chaves);
+        }
+    }
+}
+
+function exercicio7(): void {
+    console.log("\n=== EXERCÍCIO 7: ÁRVORE B ===\n");
+
+    const arvoreB = new ArvoreB<number>(3);
+    const valores = [10, 20, 5, 6, 12, 30, 7, 17];
+
+    console.log("Inserindo valores:", valores);
+    valores.forEach(valor => arvoreB.inserir(valor));
+
+    console.log("Árvore em ordem:", arvoreB.emOrdem());
+    console.log("Altura da árvore:", arvoreB.getAltura());
+
+    const buscarValores = [6, 15, 20, 25];
+    buscarValores.forEach(valor => {
+        const encontrado = arvoreB.buscar(valor);
+        console.log(`Buscar ${valor}: ${encontrado ? "Encontrado" : "Não encontrado"}`);
+    });
+}
+
+// ==================== EXERCÍCIO 8: ALGORITMO DE BELLMAN-FORD ====================
+
+/**
+ * EXERCÍCIO 8: Implementar algoritmo de Bellman-Ford
+ * Dificuldade: Difícil
+ *
+ * Descrição: Implemente o algoritmo de Bellman-Ford para encontrar caminhos
+ * mais curtos em grafos com pesos negativos (detecta ciclos negativos).
+ */
+
+class BellmanFord {
+    private grafo: Map<number, Map<number, number>> = new Map();
+
+    adicionarAresta(u: number, v: number, peso: number): void {
+        if (!this.grafo.has(u)) {
+            this.grafo.set(u, new Map());
+        }
+        this.grafo.get(u)!.set(v, peso);
+    }
+
+    encontrarCaminhoMaisCurto(inicio: number): { distancias: Map<number, number>, predecessores: Map<number, number>, cicloNegativo: boolean } {
+        const distancias = new Map<number, number>();
+        const predecessores = new Map<number, number>();
+        const vertices = Array.from(this.grafo.keys());
+
+        // Inicializar distâncias
+        for (const vertice of vertices) {
+            distancias.set(vertice, Infinity);
+            predecessores.set(vertice, -1);
+        }
+        distancias.set(inicio, 0);
+
+        // Relaxar arestas |V| - 1 vezes
+        for (let i = 0; i < vertices.length - 1; i++) {
+            for (const [u, vizinhos] of this.grafo) {
+                for (const [v, peso] of vizinhos) {
+                    const distanciaAlternativa = distancias.get(u)! + peso;
+                    if (distanciaAlternativa < distancias.get(v)!) {
+                        distancias.set(v, distanciaAlternativa);
+                        predecessores.set(v, u);
+                    }
+                }
+            }
+        }
+
+        // Verificar ciclos negativos
+        let cicloNegativo = false;
+        for (const [u, vizinhos] of this.grafo) {
+            for (const [v, peso] of vizinhos) {
+                if (distancias.get(u)! + peso < distancias.get(v)!) {
+                    cicloNegativo = true;
+                    break;
+                }
+            }
+            if (cicloNegativo) break;
+        }
+
+        return { distancias, predecessores, cicloNegativo };
+    }
+
+    reconstruirCaminho(predecessores: Map<number, number>, destino: number): number[] {
+        const caminho: number[] = [];
+        let atual = destino;
+
+        while (atual !== -1) {
+            caminho.unshift(atual);
+            atual = predecessores.get(atual) || -1;
+            if (caminho.includes(atual)) {
+                // Ciclo detectado
+                return [];
+            }
+        }
+
+        return caminho;
+    }
+}
+
+function exercicio8(): void {
+    console.log("\n=== EXERCÍCIO 8: ALGORITMO DE BELLMAN-FORD ===\n");
+
+    const bf = new BellmanFord();
+
+    // Criar grafo com pesos (alguns negativos)
+    bf.adicionarAresta(0, 1, 4);
+    bf.adicionarAresta(0, 2, 2);
+    bf.adicionarAresta(1, 2, -3);
+    bf.adicionarAresta(1, 3, 2);
+    bf.adicionarAresta(2, 3, 4);
+    bf.adicionarAresta(3, 1, -1); // Aresta com peso negativo
+
+    console.log("Grafo criado com pesos (incluindo negativos)");
+
+    const resultado = bf.encontrarCaminhoMaisCurto(0);
+
+    console.log("Ciclo negativo detectado:", resultado.cicloNegativo ? "Sim" : "Não");
+
+    if (!resultado.cicloNegativo) {
+        console.log("Distancias a partir do vértice 0:");
+        for (const [vertice, distancia] of resultado.distancias) {
+            console.log(`  Vértice ${vertice}: ${distancia === Infinity ? '∞' : distancia}`);
+        }
+
+        // Reconstruir caminho para vértice 3
+        const caminho = bf.reconstruirCaminho(resultado.predecessores, 3);
+        console.log("Caminho para vértice 3:", caminho);
+    }
+}
+
+// ==================== EXERCÍCIO 9: ALGORITMO DE FLOYD-WARSHALL ====================
+
+/**
+ * EXERCÍCIO 9: Implementar algoritmo de Floyd-Warshall
+ * Dificuldade: Difícil
+ *
+ * Descrição: Implemente o algoritmo de Floyd-Warshall para encontrar
+ * caminhos mais curtos entre todos os pares de vértices.
+ */
+
+class FloydWarshall {
+    private readonly INF = Infinity;
+    private matriz: number[][];
+
+    constructor(numVertices: number) {
+        this.matriz = Array.from({ length: numVertices }, () =>
+            Array(numVertices).fill(this.INF)
+        );
+
+        // Diagonal principal = 0
+        for (let i = 0; i < numVertices; i++) {
+            this.matriz[i][i] = 0;
+        }
+    }
+
+    adicionarAresta(u: number, v: number, peso: number): void {
+        this.matriz[u][v] = peso;
+    }
+
+    calcularCaminhosMaisCurtos(): { matriz: number[][], predecessores: number[][] } {
+        const n = this.matriz.length;
+        const dist = this.matriz.map(linha => [...linha]);
+        const pred = Array.from({ length: n }, () =>
+            Array(n).fill(-1)
+        );
+
+        // Inicializar predecessores
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < n; j++) {
+                if (i !== j && dist[i][j] !== this.INF) {
+                    pred[i][j] = i;
+                }
+            }
+        }
+
+        // Algoritmo principal
+        for (let k = 0; k < n; k++) {
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < n; j++) {
+                    if (dist[i][k] !== this.INF && dist[k][j] !== this.INF) {
+                        const novaDist = dist[i][k] + dist[k][j];
+                        if (novaDist < dist[i][j]) {
+                            dist[i][j] = novaDist;
+                            pred[i][j] = pred[k][j];
+                        }
+                    }
+                }
+            }
+        }
+
+        return { matriz: dist, predecessores: pred };
+    }
+
+    reconstruirCaminho(predecessores: number[][], origem: number, destino: number): number[] {
+        if (predecessores[origem][destino] === -1) {
+            return []; // Sem caminho
+        }
+
+        const caminho: number[] = [];
+        let atual = destino;
+
+        while (atual !== origem) {
+            caminho.unshift(atual);
+            if (predecessores[origem][atual] === -1) {
+                return []; // Caminho inválido
+            }
+            atual = predecessores[origem][atual];
+        }
+        caminho.unshift(origem);
+
+        return caminho;
+    }
+}
+
+function exercicio9(): void {
+    console.log("\n=== EXERCÍCIO 9: ALGORITMO DE FLOYD-WARSHALL ===\n");
+
+    const fw = new FloydWarshall(4);
+
+    // Criar grafo
+    fw.adicionarAresta(0, 1, 3);
+    fw.adicionarAresta(0, 3, 7);
+    fw.adicionarAresta(1, 0, 8);
+    fw.adicionarAresta(1, 2, 2);
+    fw.adicionarAresta(2, 0, 5);
+    fw.adicionarAresta(2, 3, 1);
+    fw.adicionarAresta(3, 0, 2);
+
+    console.log("Calculando caminhos mais curtos entre todos os pares...");
+
+    const { matriz, predecessores } = fw.calcularCaminhosMaisCurtos();
+
+    console.log("Matriz de distâncias:");
+    matriz.forEach((linha, i) => {
+        console.log(`  ${i}: [${linha.map(d => d === Infinity ? '∞' : d).join(', ')}]`);
+    });
+
+    // Exemplos de caminhos
+    const exemplos = [
+        [0, 2], [1, 3], [2, 1]
+    ];
+
+    console.log("\nCaminhos reconstruídos:");
+    exemplos.forEach(([origem, destino]) => {
+        const caminho = fw.reconstruirCaminho(predecessores, origem, destino);
+        const distancia = matriz[origem][destino];
+        console.log(`  ${origem} → ${destino}: ${caminho.join(' → ')} (distância: ${distancia === Infinity ? '∞' : distancia})`);
+    });
+}
+
+// ==================== EXERCÍCIO 10: PROBLEMA DO CAIXEIRO VIAJANTE (APROXIMAÇÃO) ====================
+
+/**
+ * EXERCÍCIO 10: Implementar solução aproximada para o Caixeiro Viajante
+ * Dificuldade: Difícil
+ *
+ * Descrição: Implemente uma heurística gulosa para o problema do caixeiro viajante
+ * usando o algoritmo do vizinho mais próximo.
+ */
+
+class CaixeiroViajante {
+    private grafo: number[][];
+
+    constructor(grafo: number[][]) {
+        this.grafo = grafo;
+    }
+
+    encontrarCaminhoAproximado(inicio: number = 0): { caminho: number[], distancia: number } {
+        const n = this.grafo.length;
+        const visitados = new Set<number>();
+        const caminho: number[] = [inicio];
+        visitados.add(inicio);
+
+        let distanciaTotal = 0;
+        let atual = inicio;
+
+        for (let i = 1; i < n; i++) {
+            let proximo = -1;
+            let menorDistancia = Infinity;
+
+            // Encontrar vizinho mais próximo não visitado
+            for (let j = 0; j < n; j++) {
+                if (!visitados.has(j) && this.grafo[atual][j] < menorDistancia) {
+                    menorDistancia = this.grafo[atual][j];
+                    proximo = j;
+                }
+            }
+
+            if (proximo === -1) break; // Não há mais vértices
+
+            caminho.push(proximo);
+            visitados.add(proximo);
+            distanciaTotal += menorDistancia;
+            atual = proximo;
+        }
+
+        // Retornar ao início
+        distanciaTotal += this.grafo[atual][inicio];
+        caminho.push(inicio);
+
+        return { caminho, distancia: distanciaTotal };
+    }
+
+    // Calcular distância exata (força bruta - apenas para pequenos grafos)
+    encontrarCaminhoExato(inicio: number = 0): { caminho: number[], distancia: number } {
+        const n = this.grafo.length;
+        const vertices = Array.from({ length: n }, (_, i) => i).filter(v => v !== inicio);
+        const permutacoes = this.gerarPermutacoes(vertices);
+
+        let melhorCaminho: number[] = [];
+        let menorDistancia = Infinity;
+
+        for (const perm of permutacoes) {
+            const caminho = [inicio, ...perm, inicio];
+            let distancia = 0;
+
+            for (let i = 0; i < caminho.length - 1; i++) {
+                distancia += this.grafo[caminho[i]][caminho[i + 1]];
+            }
+
+            if (distancia < menorDistancia) {
+                menorDistancia = distancia;
+                melhorCaminho = caminho;
+            }
+        }
+
+        return { caminho: melhorCaminho, distancia: menorDistancia };
+    }
+
+    private gerarPermutacoes(array: number[]): number[][] {
+        if (array.length <= 1) return [array];
+
+        const resultado: number[][] = [];
+
+        for (let i = 0; i < array.length; i++) {
+            const atual = array[i];
+            const restante = array.slice(0, i).concat(array.slice(i + 1));
+            const permRestante = this.gerarPermutacoes(restante);
+
+            for (const perm of permRestante) {
+                resultado.push([atual, ...perm]);
+            }
+        }
+
+        return resultado;
+    }
+}
+
+function exercicio10(): void {
+    console.log("\n=== EXERCÍCIO 10: CAIXEIRO VIAJANTE (APROXIMAÇÃO) ===\n");
+
+    // Criar grafo de distâncias (matriz simétrica)
+    const grafo = [
+        [0, 10, 15, 20],
+        [10, 0, 35, 25],
+        [15, 35, 0, 30],
+        [20, 25, 30, 0]
+    ];
+
+    const cv = new CaixeiroViajante(grafo);
+
+    console.log("Matriz de distâncias:");
+    grafo.forEach((linha, i) => {
+        console.log(`  Cidade ${i}: [${linha.join(', ')}]`);
+    });
+
+    // Solução aproximada
+    const aproximada = cv.encontrarCaminhoAproximado(0);
+    console.log("\nSolução aproximada (Vizinho Mais Próximo):");
+    console.log(`  Caminho: ${aproximada.caminho.join(' → ')}`);
+    console.log(`  Distância: ${aproximada.distancia}`);
+
+    // Para grafos pequenos, calcular solução exata
+    if (grafo.length <= 10) {
+        const exata = cv.encontrarCaminhoExato(0);
+        console.log("\nSolução exata (Força Bruta):");
+        console.log(`  Caminho: ${exata.caminho.join(' → ')}`);
+        console.log(`  Distância: ${exata.distancia}`);
+        console.log(`  Aproximação: ${((aproximada.distancia / exata.distancia - 1) * 100).toFixed(1)}% acima do ótimo`);
+    }
+}
+
 // ==================== DESAFIO EXTRA: BINGO ORDENADO vs NÃO ORDENADO ====================
 
 /**
@@ -1108,7 +1626,10 @@ function executarExerciciosDificeis(): void {
     exercicio4();
     exercicio5();
     exercicio6();
-    desafioBingo();
+    exercicio7();
+    exercicio8();
+    exercicio9();
+    exercicio10();
     desafioBingo();
 
     console.log("\n✅ Todos os exercícios difíceis foram executados!");

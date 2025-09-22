@@ -608,6 +608,295 @@ function exercicio8(): void {
     console.log("Estável:", radixSort.isEstavel() ? "Sim" : "Não");
 }
 
+// ==================== EXERCÍCIO 9: BUCKET SORT ====================
+
+/**
+ * EXERCÍCIO 9: Implementar Bucket Sort
+ * Dificuldade: Médio
+ *
+ * Descrição: Implemente o algoritmo Bucket Sort. Distribua elementos em
+ * diferentes "baldes" e ordene cada balde individualmente usando insertion sort.
+ */
+
+class BucketSort extends AlgoritmoOrdenacaoBase<number> {
+    ordenar(array: number[]): number[] {
+        this.resetarEstatisticas();
+        const resultado = [...array];
+
+        if (resultado.length === 0) return resultado;
+
+        // Encontrar min e max para determinar intervalos dos baldes
+        const min = Math.min(...resultado);
+        const max = Math.max(...resultado);
+        const numBaldes = Math.floor(Math.sqrt(resultado.length)) + 1;
+
+        // Criar baldes
+        const baldes: number[][] = Array.from({ length: numBaldes }, () => []);
+
+        // Distribuir elementos nos baldes
+        for (const num of resultado) {
+            const indiceBaldes = Math.floor(((num - min) / (max - min + 1)) * numBaldes);
+            const indiceSeguro = Math.min(indiceBaldes, numBaldes - 1);
+            baldes[indiceSeguro].push(num);
+        }
+
+        // Ordenar cada balde e combinar
+        const resultadoFinal: number[] = [];
+        for (const balde of baldes) {
+            if (balde.length > 0) {
+                // Usar insertion sort para cada balde (eficiente para arrays pequenos)
+                const baldeOrdenado = this.insertionSortBalde(balde);
+                resultadoFinal.push(...baldeOrdenado);
+            }
+        }
+
+        return resultadoFinal;
+    }
+
+    private insertionSortBalde(balde: number[]): number[] {
+        const resultado = [...balde];
+        for (let i = 1; i < resultado.length; i++) {
+            const chave = resultado[i];
+            let j = i - 1;
+
+            while (j >= 0 && this.comparar(resultado[j], chave) > 0) {
+                resultado[j + 1] = resultado[j];
+                this.trocas++;
+                j--;
+            }
+
+            resultado[j + 1] = chave;
+        }
+        return resultado;
+    }
+
+    getNome(): string { return "Bucket Sort"; }
+    getComplexidade(): string { return "O(n + k)"; }
+    isEstavel(): boolean { return true; }
+}
+
+function exercicio9(): void {
+    console.log("\n=== EXERCÍCIO 9: BUCKET SORT ===\n");
+
+    const bucketSort = new BucketSort();
+    const dados = [0.42, 0.32, 0.33, 0.52, 0.37, 0.47, 0.51];
+
+    console.log("Array original:", dados);
+
+    const { resultado, tempo } = MedidorPerformance.medirTempo(() =>
+        bucketSort.ordenar(dados)
+    );
+
+    console.log("Array ordenado:", resultado);
+    console.log("Tempo de execução:", tempo.toFixed(4), "ms");
+    console.log("Estatísticas:", bucketSort.getEstatisticas());
+    console.log("Complexidade:", bucketSort.getComplexidade());
+    console.log("Estável:", bucketSort.isEstavel() ? "Sim" : "Não");
+}
+
+// ==================== EXERCÍCIO 10: COMB SORT ====================
+
+/**
+ * EXERCÍCIO 10: Implementar Comb Sort
+ * Dificuldade: Médio
+ *
+ * Descrição: Implemente o algoritmo Comb Sort, uma variação do Bubble Sort
+ * que usa intervalos decrescentes para eliminar tartarugas (elementos pequenos no final).
+ */
+
+class CombSort extends AlgoritmoOrdenacaoBase<number> {
+    ordenar(array: number[]): number[] {
+        this.resetarEstatisticas();
+        const resultado = [...array];
+        const n = resultado.length;
+
+        // Fator de redução (geralmente 1.3)
+        const fatorReducao = 1.3;
+        let intervalo = n;
+        let houveTroca = true;
+
+        while (intervalo > 1 || houveTroca) {
+            if (intervalo > 1) {
+                intervalo = Math.floor(intervalo / fatorReducao);
+            }
+
+            houveTroca = false;
+
+            for (let i = 0; i + intervalo < n; i++) {
+                if (this.comparar(resultado[i], resultado[i + intervalo]) > 0) {
+                    this.trocar(resultado, i, i + intervalo);
+                    houveTroca = true;
+                }
+            }
+        }
+
+        return resultado;
+    }
+
+    getNome(): string { return "Comb Sort"; }
+    getComplexidade(): string { return "O(n²) pior caso, O(n log n) médio"; }
+    isEstavel(): boolean { return false; }
+}
+
+function exercicio10(): void {
+    console.log("\n=== EXERCÍCIO 10: COMB SORT ===\n");
+
+    const combSort = new CombSort();
+    const dados = [8, 4, 1, 56, 3, -44, 23, -6, 28, 0];
+
+    console.log("Array original:", dados);
+
+    const { resultado, tempo } = MedidorPerformance.medirTempo(() =>
+        combSort.ordenar(dados)
+    );
+
+    console.log("Array ordenado:", resultado);
+    console.log("Tempo de execução:", tempo.toFixed(4), "ms");
+    console.log("Estatísticas:", combSort.getEstatisticas());
+    console.log("Complexidade:", combSort.getComplexidade());
+    console.log("Estável:", combSort.isEstavel() ? "Sim" : "Não");
+}
+
+// ==================== EXERCÍCIO 11: BUSCA TERNÁRIA ====================
+
+/**
+ * EXERCÍCIO 11: Implementar Busca Ternária
+ * Dificuldade: Médio
+ *
+ * Descrição: Implemente a busca ternária para arrays ordenados.
+ * Divide o array em três partes ao invés de duas.
+ */
+
+class BuscaTernaria extends AlgoritmoBuscaBase<number> {
+    buscar(array: number[], elemento: number): number {
+        this.resetarEstatisticas();
+        return this.buscaTernariaRecursiva(array, elemento, 0, array.length - 1);
+    }
+
+    private buscaTernariaRecursiva(array: number[], elemento: number, esquerda: number, direita: number): number {
+        if (esquerda > direita) {
+            return -1;
+        }
+
+        // Dividir em três partes
+        const terco1 = esquerda + Math.floor((direita - esquerda) / 3);
+        const terco2 = direita - Math.floor((direita - esquerda) / 3);
+
+        // Verificar os pontos de divisão
+        if (this.comparar(array[terco1], elemento) === 0) {
+            return terco1;
+        }
+        if (this.comparar(array[terco2], elemento) === 0) {
+            return terco2;
+        }
+
+        // Decidir qual terço procurar
+        if (this.comparar(elemento, array[terco1]) < 0) {
+            return this.buscaTernariaRecursiva(array, elemento, esquerda, terco1 - 1);
+        } else if (this.comparar(elemento, array[terco2]) < 0) {
+            return this.buscaTernariaRecursiva(array, elemento, terco1 + 1, terco2 - 1);
+        } else {
+            return this.buscaTernariaRecursiva(array, elemento, terco2 + 1, direita);
+        }
+    }
+
+    getNome(): string { return "Busca Ternária"; }
+    getComplexidade(): string { return "O(log₃ n)"; }
+    requerOrdenado(): boolean { return true; }
+}
+
+function exercicio11(): void {
+    console.log("\n=== EXERCÍCIO 11: BUSCA TERNÁRIA ===\n");
+
+    const buscaTernaria = new BuscaTernaria();
+    const dados = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    const elemento = 8;
+
+    console.log("Array ordenado:", dados);
+    console.log("Buscando elemento:", elemento);
+
+    const { resultado, tempo } = MedidorPerformance.medirTempo(() =>
+        buscaTernaria.buscar(dados, elemento)
+    );
+
+    console.log("Índice encontrado:", resultado);
+    console.log("Tempo de execução:", tempo.toFixed(4), "ms");
+    console.log("Estatísticas:", buscaTernaria.getEstatisticas());
+    console.log("Requer ordenado:", buscaTernaria.requerOrdenado() ? "Sim" : "Não");
+}
+
+// ==================== EXERCÍCIO 12: BUSCA EXPONENCIAL ====================
+
+/**
+ * EXERCÍCIO 12: Implementar Busca Exponencial
+ * Dificuldade: Médio
+ *
+ * Descrição: Implemente a busca exponencial, que encontra um intervalo
+ * usando busca exponencial e depois aplica busca binária.
+ */
+
+class BuscaExponencial extends AlgoritmoBuscaBase<number> {
+    buscar(array: number[], elemento: number): number {
+        this.resetarEstatisticas();
+
+        if (array.length === 0) return -1;
+
+        // Verificar primeiro elemento
+        if (this.comparar(array[0], elemento) === 0) {
+            return 0;
+        }
+
+        // Encontrar intervalo usando busca exponencial
+        let i = 1;
+        while (i < array.length && this.comparar(array[i], elemento) <= 0) {
+            i *= 2;
+        }
+
+        // Aplicar busca binária no intervalo encontrado
+        return this.buscaBinaria(array, elemento, i / 2, Math.min(i, array.length - 1));
+    }
+
+    private buscaBinaria(array: number[], elemento: number, esquerda: number, direita: number): number {
+        while (esquerda <= direita) {
+            const meio = Math.floor((esquerda + direita) / 2);
+            const comparacao = this.comparar(array[meio], elemento);
+
+            if (comparacao === 0) {
+                return meio;
+            } else if (comparacao < 0) {
+                esquerda = meio + 1;
+            } else {
+                direita = meio - 1;
+            }
+        }
+        return -1;
+    }
+
+    getNome(): string { return "Busca Exponencial"; }
+    getComplexidade(): string { return "O(log n)"; }
+    requerOrdenado(): boolean { return true; }
+}
+
+function exercicio12(): void {
+    console.log("\n=== EXERCÍCIO 12: BUSCA EXPONENCIAL ===\n");
+
+    const buscaExponencial = new BuscaExponencial();
+    const dados = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+    const elemento = 15;
+
+    console.log("Array ordenado:", dados);
+    console.log("Buscando elemento:", elemento);
+
+    const { resultado, tempo } = MedidorPerformance.medirTempo(() =>
+        buscaExponencial.buscar(dados, elemento)
+    );
+
+    console.log("Índice encontrado:", resultado);
+    console.log("Tempo de execução:", tempo.toFixed(4), "ms");
+    console.log("Estatísticas:", buscaExponencial.getEstatisticas());
+    console.log("Requer ordenado:", buscaExponencial.requerOrdenado() ? "Sim" : "Não");
+}
+
 // ==================== EXECUÇÃO DOS EXERCÍCIOS ====================
 
 function executarExerciciosMedios(): void {
@@ -622,6 +911,10 @@ function executarExerciciosMedios(): void {
     exercicio6();
     exercicio7();
     exercicio8();
+    exercicio9();
+    exercicio10();
+    exercicio11();
+    exercicio12();
 
     console.log("\n✅ Todos os exercícios médios foram executados!");
 }
